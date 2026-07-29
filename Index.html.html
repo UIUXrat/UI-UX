@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier/UX — Interactive UI·UX Learning Studio</title>
+<meta name="description" content="A self-contained, interactive studio for learning UI/UX design from scratch. Lessons, labs, challenges, and a design playground — no experience required.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1c1a1a;
+  --ink-2:#201e1d;
+  --panel:#2d2b2b;
+  --panel-2:#343131;
+  --line:#605d5d;
+  --line-soft:rgba(96,93,93,.45);
+  --vermilion:#ec3013;
+  --vermilion-deep:#7c1405;
+  --peach:#ff9784;
+  --cream:#fff2ef;
+  --text:#f3f2f2;
+  --muted:#a8a3a1;
+  --ok:#7fc98f;
+  --warn:#e8b64c;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Public Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:10px;
+  --sp:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+body{
+  background:var(--ink);
+  color:var(--text);
+  font-family:var(--body);
+  font-size:15.5px;
+  line-height:1.6;
+  min-height:100vh;
+}
+::selection{background:var(--vermilion);color:var(--cream)}
+a{color:var(--peach)}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--peach);outline-offset:2px;border-radius:4px}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:248px 1fr;grid-template-rows:60px 1fr;height:100vh}
+header.topbar{
+  grid-column:1/-1;
+  display:flex;align-items:center;gap:20px;
+  padding:0 20px;
+  background:var(--ink-2);
+  border-bottom:1px solid var(--line-soft);
+  position:relative;z-index:30;
+}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;letter-spacing:.04em;font-size:17px;white-space:nowrap}
+.brand .mark{
+  width:26px;height:26px;border:2px solid var(--vermilion);border-radius:6px;
+  display:grid;place-items:center;color:var(--vermilion);font-size:12px;font-family:var(--mono);
+}
+.brand span.ux{color:var(--vermilion)}
+.xpwrap{display:flex;align-items:center;gap:12px;margin-left:auto;min-width:0}
+.levelname{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.xpbar{width:180px;height:8px;background:var(--panel);border-radius:99px;overflow:hidden;border:1px solid var(--line-soft)}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--vermilion-deep),var(--vermilion));width:0%;transition:width .5s ease}
+.xpnum{font-family:var(--mono);font-size:12px;color:var(--peach);white-space:nowrap}
+.xraybtn{
+  border:1px solid var(--line);background:transparent;color:var(--text);
+  padding:7px 14px;border-radius:99px;font-size:13px;font-family:var(--mono);
+  transition:all .2s;white-space:nowrap;
+}
+.xraybtn:hover{border-color:var(--peach);color:var(--peach)}
+.xraybtn.on{background:var(--vermilion);border-color:var(--vermilion);color:var(--cream)}
+
+nav.side{
+  background:var(--ink-2);
+  border-right:1px solid var(--line-soft);
+  overflow-y:auto;
+  padding:18px 12px 30px;
+}
+.navlabel{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:16px 10px 6px}
+.navitem{
+  display:flex;align-items:center;gap:9px;width:100%;
+  background:none;border:none;color:var(--text);
+  text-align:left;padding:9px 10px;border-radius:8px;font-size:13.5px;
+  transition:background .15s;
+}
+.navitem:hover{background:var(--panel)}
+.navitem.active{background:var(--panel);color:var(--peach)}
+.navitem .dot{width:7px;height:7px;border-radius:99px;background:var(--line);flex:none}
+.navitem.done .dot{background:var(--ok)}
+.navitem.active .dot{background:var(--vermilion)}
+.navitem .nnum{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:20px}
+
+main{overflow-y:auto;padding:36px 44px 90px;position:relative}
+.view{max-width:900px;margin:0 auto;animation:rise .35s ease}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- typography ---------- */
+h1{font-family:var(--display);font-size:clamp(28px,4vw,40px);line-height:1.12;font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
+h2{font-family:var(--display);font-size:22px;font-weight:700;margin:34px 0 12px}
+h3{font-family:var(--display);font-size:17px;font-weight:500;margin:22px 0 8px;color:var(--peach)}
+p{margin-bottom:14px;color:#dcd8d6}
+p strong{color:var(--text)}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--vermilion);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.eyebrow::after{content:"";height:1px;width:48px;background:var(--vermilion-deep)}
+.lede{font-size:17.5px;color:var(--muted);max-width:62ch}
+
+/* ---------- components ---------- */
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:22px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--vermilion);color:var(--cream);border:none;
+  padding:10px 20px;border-radius:8px;font-weight:600;font-size:14px;
+  transition:transform .12s,filter .15s;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn.ghost:hover{border-color:var(--peach);color:var(--peach);filter:none}
+.btn.sm{padding:6px 13px;font-size:12.5px;border-radius:7px}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.tag{font-family:var(--mono);font-size:11px;background:var(--ink);border:1px solid var(--line-soft);border-radius:99px;padding:3px 10px;color:var(--muted)}
+.tag.hot{color:var(--peach);border-color:var(--vermilion-deep)}
+.callout{
+  border-left:3px solid var(--vermilion);background:var(--ink-2);
+  padding:14px 18px;border-radius:0 var(--r) var(--r) 0;margin:16px 0;
+}
+.callout .cl-t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--vermilion);margin-bottom:5px}
+.callout p{margin:0;font-size:14.5px}
+code{font-family:var(--mono);font-size:.88em;background:var(--ink-2);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;color:var(--peach)}
+hr{border:none;border-top:1px solid var(--line-soft);margin:28px 0}
+.badgechip{display:inline-flex;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-soft);border-radius:99px;padding:6px 14px;font-size:13px}
+.badgechip.won{border-color:var(--vermilion);color:var(--peach)}
+.progressline{height:6px;background:var(--ink);border-radius:99px;overflow:hidden;border:1px solid var(--line-soft)}
+.progressline i{display:block;height:100%;background:var(--vermilion)}
+
+/* toast */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:99;
+  background:var(--ink-2);border:1px solid var(--vermilion);color:var(--cream);
+  padding:12px 18px;border-radius:10px;font-size:14px;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(12px);transition:all .3s;pointer-events:none;
+  font-family:var(--mono);
+}
+#toast.show{opacity:1;transform:none}
+
+/* ---------- home ---------- */
+.hero{padding:26px 0 8px}
+.hero h1{max-width:16ch}
+.hero h1 em{font-style:normal;color:var(--vermilion)}
+.statrow{display:flex;gap:14px;margin:26px 0;flex-wrap:wrap}
+.stat{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 20px;min-width:140px}
+.stat b{font-family:var(--display);font-size:24px;display:block;color:var(--peach)}
+.stat span{font-size:12px;color:var(--muted);font-family:var(--mono)}
+.pathcard{display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:border-color .2s,transform .15s;text-align:left;width:100%;color:var(--text);font-family:var(--body)}
+.pathcard:hover{border-color:var(--vermilion);transform:translateY(-2px)}
+.pathcard .pnum{font-family:var(--mono);color:var(--vermilion);font-size:13px;padding-top:2px}
+.pathcard h3{margin:0 0 5px;color:var(--text)}
+.pathcard p{font-size:13.5px;color:var(--muted);margin:0}
+.pathcard .pmeta{margin-top:10px;display:flex;gap:8px;align-items:center}
+
+/* ---------- lessons ---------- */
+.lesson{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:26px 28px;margin-bottom:18px}
+.lesson h3{margin-top:0;color:var(--text);font-size:19px}
+.lesson .lnum{font-family:var(--mono);font-size:11.5px;color:var(--vermilion);letter-spacing:.12em}
+.lesson ul{margin:0 0 14px 20px;color:#dcd8d6}
+.lesson li{margin-bottom:6px}
+.lesson .demo{background:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:18px;margin:14px 0}
+.completerow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line-soft)}
+.completerow .donebadge{color:var(--ok);font-family:var(--mono);font-size:12.5px}
+
+/* quiz */
+.quiz .q{margin-bottom:22px}
+.quiz .qt{font-weight:600;margin-bottom:10px}
+.opt{display:flex;gap:10px;align-items:flex-start;background:var(--ink-2);border:1px solid var(--line-soft);border-radius:8px;padding:11px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;font-size:14px}
+.opt:hover{border-color:var(--line)}
+.opt input{accent-color:var(--vermilion);margin-top:3px}
+.opt.correct{border-color:var(--ok)}
+.opt.wrong{border-color:var(--vermilion)}
+.quizresult{font-family:var(--display);font-size:20px;margin-top:10px}
+
+/* ---------- labs ---------- */
+.labgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.labcard{cursor:pointer;text-align:left;color:var(--text);transition:border-color .2s,transform .15s;font-family:var(--body)}
+.labcard:hover{border-color:var(--vermilion);transform:translateY(-2px)}
+.labcard .licon{font-size:26px;margin-bottom:10px}
+.labcard h3{margin:0 0 6px;color:var(--text);font-size:16px}
+.labcard p{font-size:13px;color:var(--muted);margin:0}
+.labpanel{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:24px;margin-top:18px}
+.ctlrow{display:flex;gap:18px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.ctl{display:flex;flex-direction:column;gap:5px;font-size:12.5px;color:var(--muted);font-family:var(--mono)}
+.ctl input[type=range]{width:180px;accent-color:var(--vermilion)}
+.ctl input[type=color]{width:52px;height:34px;border:1px solid var(--line);border-radius:7px;background:var(--ink);padding:2px;cursor:pointer}
+.ctl select{background:var(--ink-2);color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-family:var(--mono);font-size:12.5px}
+.bigratio{font-family:var(--display);font-size:46px;font-weight:700;line-height:1}
+.passrow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pf{font-family:var(--mono);font-size:12px;padding:5px 12px;border-radius:99px;border:1px solid var(--line-soft)}
+.pf.pass{color:var(--ok);border-color:var(--ok)}
+.pf.fail{color:var(--vermilion);border-color:var(--vermilion)}
+.contrast-preview{border-radius:10px;padding:26px;margin-top:14px;border:1px solid var(--line-soft)}
+.typescale-out div{border-bottom:1px dashed var(--line-soft);padding:8px 0;display:flex;align-items:baseline;gap:16px}
+.typescale-out .sz{font-family:var(--mono);font-size:11px;color:var(--muted);width:88px;flex:none}
+.spacing-demo-card{background:#f3f2f2;color:#1c1a1a;border-radius:12px;max-width:400px;transition:padding .2s}
+.spacing-demo-card h4{font-family:var(--display);font-size:19px;margin-bottom:0;transition:margin .2s}
+.spacing-demo-card p{color:#555;font-size:13.5px;margin:0;transition:margin .2s}
+.spacing-demo-card .sbtn{background:var(--vermilion);color:#fff;border:none;border-radius:7px;padding:9px 16px;font-weight:600;font-size:13px}
+.arena{position:relative;height:340px;background:var(--ink);border:1px solid var(--line-soft);border-radius:10px;overflow:hidden;margin-top:14px}
+.target{position:absolute;border-radius:99px;background:var(--vermilion);border:none;transition:filter .1s}
+.target:hover{filter:brightness(1.15)}
+.arenamsg{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:13px;text-align:center;padding:20px}
+.hickgrid{display:grid;gap:10px;margin-top:14px}
+.hickbtn{background:var(--ink-2);border:1px solid var(--line-soft);color:var(--text);border-radius:8px;padding:12px 8px;font-family:var(--mono);font-size:13px;transition:border-color .1s}
+.hickbtn:hover{border-color:var(--peach)}
+.swatches{display:flex;gap:0;border-radius:10px;overflow:hidden;height:74px;margin:14px 0;border:1px solid var(--line-soft)}
+.swatches div{flex:1;display:flex;align-items:flex-end;padding:6px;font-family:var(--mono);font-size:10px;color:rgba(0,0,0,.55)}
+.mockplayer{border-radius:14px;padding:22px;max-width:360px;border:1px solid var(--line-soft)}
+.mockplayer .art{height:130px;border-radius:10px;margin-bottom:14px}
+.mockplayer h4{font-family:var(--display);font-size:17px}
+.mockplayer .sub{font-size:12px;opacity:.7;margin-bottom:14px}
+.mockplayer .track{height:5px;border-radius:99px;margin-bottom:14px;position:relative}
+.mockplayer .track i{position:absolute;left:0;top:0;bottom:0;width:40%;border-radius:99px;display:block}
+.mockplayer .pbtns{display:flex;gap:10px;align-items:center}
+.mockplayer .play{width:44px;height:44px;border-radius:99px;border:none;font-size:15px}
+
+/* ---------- challenges ---------- */
+.chmock{border-radius:12px;overflow:hidden;border:1px solid var(--line-soft);margin:16px 0;background:#fff}
+.chopt{display:flex;gap:10px;align-items:flex-start;background:var(--ink-2);border:1px solid var(--line-soft);border-radius:8px;padding:11px 14px;margin-bottom:8px;cursor:pointer;font-size:14px}
+.chopt input{accent-color:var(--vermilion);margin-top:3px}
+.chopt.correct{border-color:var(--ok)}
+.chopt.wrong{border-color:var(--vermilion)}
+
+/* ---------- playground ---------- */
+.pg{display:grid;grid-template-columns:170px 1fr 230px;gap:16px;align-items:start}
+.pg .palette button{display:block;width:100%;margin-bottom:8px;background:var(--ink-2);border:1px solid var(--line-soft);color:var(--text);border-radius:8px;padding:9px 10px;font-size:12.5px;text-align:left;transition:border-color .15s}
+.pg .palette button:hover{border-color:var(--peach)}
+.frame{background:#f3f2f2;border-radius:14px;margin:0 auto;padding:22px;min-height:440px;transition:width .25s;box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.frame.mobile{width:340px}
+.frame.desktop{width:100%;max-width:640px}
+.pgel{border:2px dashed transparent;border-radius:6px;padding:4px;cursor:pointer;transition:border-color .1s;margin-bottom:4px}
+.pgel:hover{border-color:#e0b6ad}
+.pgel.sel{border-color:var(--vermilion)}
+.pgel h4{font-family:var(--display);color:#1c1a1a;line-height:1.2}
+.pgel p{color:#4c4846;margin:0;line-height:1.5}
+.pgel .pgbtn{border:none;border-radius:8px;font-weight:600;color:#fff;padding:10px 18px}
+.pgel input{width:100%;border:1px solid #c9c2bf;border-radius:8px;padding:10px 12px;font-family:var(--body);font-size:14px;background:#fff;color:#1c1a1a}
+.pgel .imgph{background:repeating-linear-gradient(45deg,#dcd6d3,#dcd6d3 8px,#d0c9c6 8px,#d0c9c6 16px);border-radius:8px;display:grid;place-items:center;color:#8a827e;font-family:var(--mono);font-size:11px}
+.pgel .divl{border:none;border-top:1px solid #c9c2bf;margin:6px 0}
+.props{position:sticky;top:0}
+.props .ctl{margin-bottom:12px}
+.props input[type=text]{background:var(--ink-2);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:8px 10px;width:100%;font-size:13px;font-family:var(--body)}
+.seg{display:flex;border:1px solid var(--line-soft);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:var(--ink-2);border:none;color:var(--muted);padding:7px 4px;font-size:11.5px;font-family:var(--mono)}
+.seg button.on{background:var(--vermilion);color:var(--cream)}
+.emptycanvas{color:#9a938f;text-align:center;font-family:var(--mono);font-size:12px;padding:60px 20px;border:2px dashed #cfc8c5;border-radius:10px}
+
+/* ---------- glossary ---------- */
+.gsearch{width:100%;background:var(--panel);border:1px solid var(--line-soft);border-radius:10px;padding:13px 16px;color:var(--text);font-size:15px;font-family:var(--body);margin-bottom:18px}
+.gterm{border-bottom:1px solid var(--line-soft);padding:14px 4px}
+.gterm b{font-family:var(--display);color:var(--peach)}
+.gterm p{margin:4px 0 0;font-size:14px;color:var(--muted)}
+
+/* ---------- x-ray mode (signature) ---------- */
+body.xray [data-xr]{position:relative;outline:1px dashed var(--peach);outline-offset:3px}
+body.xray [data-xr]::after{
+  content:attr(data-xr);
+  position:absolute;top:-11px;left:8px;
+  background:var(--vermilion);color:var(--cream);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;
+  padding:2px 7px;border-radius:4px;white-space:nowrap;z-index:40;
+  pointer-events:none;line-height:1.4;
+}
+#xraybanner{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:60;
+  background:var(--ink-2);border:1px solid var(--vermilion);border-radius:12px;padding:12px 20px;
+  font-size:13px;max-width:560px;box-shadow:0 12px 40px rgba(0,0,0,.55);text-align:center}
+body.xray #xraybanner{display:block}
+#xraybanner b{color:var(--peach)}
+
+/* responsive */
+@media (max-width:900px){
+  .app{grid-template-columns:1fr;grid-template-rows:60px auto 1fr}
+  nav.side{border-right:none;border-bottom:1px solid var(--line-soft);display:flex;overflow-x:auto;padding:8px;gap:4px}
+  .navlabel{display:none}
+  .navitem{white-space:nowrap;width:auto}
+  main{padding:24px 18px 80px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .pg{grid-template-columns:1fr}
+  .frame.mobile{width:100%}
+  .xpbar{width:90px}
+  .levelname{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" data-xr="header · 60px fixed height · highest hierarchy">
+    <div class="brand"><span class="mark">◎</span>ATELIER<span class="ux">/UX</span></div>
+    <div class="xpwrap">
+      <span class="levelname" id="levelname">Observer</span>
+      <div class="xpbar" data-xr="progress bar · instant feedback"><i id="xpfill"></i></div>
+      <span class="xpnum" id="xpnum">0 XP</span>
+      <button class="xraybtn" id="xraytoggle" aria-pressed="false" title="Annotate this interface with its own design decisions">◉ X-Ray</button>
+    </div>
+  </header>
+
+  <nav class="side" id="sidenav" data-xr="sidebar nav · persistent wayfinding" aria-label="Main navigation"></nav>
+
+  <main id="main"></main>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="xraybanner"><b>X-Ray mode:</b> the studio is dissecting its own interface. Every dashed label explains a real design decision on this page — the platform is the first case study.</div>
+
+<script>
+"use strict";
+
+/* =====================================================
+   STATE & STORAGE
+===================================================== */
+const LS_KEY = "atelier-ux-progress-v1";
+let memStore = null;
+
+function loadState(){
+  const blank = {xp:0, lessons:[], quizzes:{}, labs:[], challenges:[], badges:[], pgAdds:0};
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) return Object.assign(blank, JSON.parse(raw));
+  }catch(e){ if(memStore) return memStore; }
+  return blank;
+}
+function saveState(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }
+  catch(e){ memStore = S; }
+  renderXP(); renderNav();
+}
+let S = loadState();
+
+const LEVELS = [
+  {at:0,    name:"Observer"},
+  {at:120,  name:"Apprentice"},
+  {at:300,  name:"Practitioner"},
+  {at:560,  name:"Designer"},
+  {at:900,  name:"Senior Designer"},
+  {at:1300, name:"Design Lead"},
+  {at:2000, name:"Principal Designer"}
+];
+function levelInfo(){
+  let cur=LEVELS[0], next=null;
+  for(let i=0;i<LEVELS.length;i++){
+    if(S.xp>=LEVELS[i].at){cur=LEVELS[i]; next=LEVELS[i+1]||null;}
+  }
+  return {cur,next};
+}
+function addXP(n,msg){
+  S.xp+=n; saveState();
+  toast("+"+n+" XP — "+msg);
+}
+function award(badge){
+  if(!S.badges.includes(badge)){
+    S.badges.push(badge); saveState();
+    setTimeout(()=>toast("★ Badge earned: "+badge),900);
+  }
+}
+let toastTimer=null;
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),2600);
+}
+function renderXP(){
+  const {cur,next}=levelInfo();
+  document.getElementById("levelname").textContent=cur.name;
+  document.getElementById("xpnum").textContent=S.xp+" XP";
+  const pct = next ? Math.min(100,((S.xp-cur.at)/(next.at-cur.at))*100) : 100;
+  document.getElementById("xpfill").style.width=pct+"%";
+}
+
+/* =====================================================
+   CONTENT — MODULES & LESSONS
+===================================================== */
+const MODULES = [
+{
+  id:"m1", num:"01", title:"Foundations", blurb:"What UI and UX actually mean, how designers think, and why every screen starts with a person — not a pixel.",
+  lessons:[
+    {id:"m1l1", t:"UI vs UX — two jobs, one goal", html:`
+      <p><strong>UX (User Experience)</strong> is how a product <em>feels to use</em> — whether people can find what they need, finish what they came to do, and leave without frustration. <strong>UI (User Interface)</strong> is what they actually see and touch — the buttons, colors, type, and layout that make the experience possible.</p>
+      <p>A useful analogy: UX is the architecture of a house (where the rooms go, how you move between them), UI is the interior design (the paint, the fixtures, the door handles). A gorgeous room in the wrong place is still a failure. A perfectly placed room with a broken door handle is too.</p>
+      <div class="demo"><strong>Try it right now:</strong> this platform's sidebar is a <em>UX</em> decision (persistent navigation so you never feel lost). The vermilion color of the active item is a <em>UI</em> decision (a visual cue drawing your eye). Toggle <code>X-Ray</code> in the top bar to see more decisions annotated live.</div>`},
+    {id:"m1l2", t:"Design is problem-solving, not decoration", html:`
+      <p>Beginners often think design starts with "making it pretty." Professionals start with three questions:</p>
+      <ul>
+        <li><strong>Who</strong> is this for? (A nurse on a night shift reads screens differently than a teenager on a bus.)</li>
+        <li><strong>What</strong> are they trying to do? (Every screen should have one primary job.)</li>
+        <li><strong>What's in their way?</strong> (Confusion, too many choices, tiny tap targets, unreadable text.)</li>
+      </ul>
+      <p>Only after answering those do color and type enter the conversation — and by then, most of the decisions make themselves.</p>
+      <div class="callout"><div class="cl-t">Studio rule</div><p>If you can't say what problem a design element solves, it's decoration. Decoration is fine — but you should know which is which.</p></div>`},
+    {id:"m1l3", t:"The double diamond — how a design project flows", html:`
+      <p>Most real projects loosely follow the <strong>double diamond</strong>: two rounds of "go wide, then narrow."</p>
+      <ul>
+        <li><strong>Discover</strong> — research users, watch them work, collect problems. (Go wide.)</li>
+        <li><strong>Define</strong> — pick the one problem worth solving. (Narrow.)</li>
+        <li><strong>Develop</strong> — sketch many possible solutions, wireframe, prototype. (Go wide again.)</li>
+        <li><strong>Deliver</strong> — test with real people, refine, ship. (Narrow again.)</li>
+      </ul>
+      <p>Notice that pixels only show up in the second diamond. Half the job is understanding the problem — which is why non-technical backgrounds (teaching, retail, healthcare, writing) are genuinely useful in UX: you've watched real people struggle with real systems.</p>`}
+  ],
+  quiz:[
+    {q:"A checkout flow looks beautiful but users keep abandoning it at the shipping step. This is primarily a…", opts:["UI problem — the colors need work","UX problem — something in the flow is failing users","Marketing problem","Bug in the code"], a:1, why:"The visuals may be fine; the experience of completing the task is broken. That's UX territory."},
+    {q:"What should come FIRST in a design project?", opts:["Choosing a color palette","Understanding who the user is and what they need","Picking fonts","Building the final screens"], a:1, why:"Who / what / what's-in-the-way come before any visual decision."},
+    {q:"In the double diamond, wireframing and prototyping happen during…", opts:["Discover","Define","Develop","Deliver"], a:2, why:"Develop is the second 'go wide' phase — exploring many possible solutions."},
+    {q:"'UI is the door handle, UX is where the door leads.' A door handle that looks great but is impossible to grip is…", opts:["Good UI, bad UX","Bad UI causing bad UX","Good UX, bad UI","Neither UI nor UX"], a:1, why:"The interface element itself fails, and that failure damages the experience."}
+  ]
+},
+{
+  id:"m2", num:"02", title:"Visual Hierarchy & Layout", blurb:"How to control what people see first, second, and third — using size, weight, position, and the most underrated tool in design: empty space.",
+  lessons:[
+    {id:"m2l1", t:"Hierarchy — directing the eye", html:`
+      <p>People don't read screens; they <strong>scan</strong> them. Visual hierarchy is how you choreograph that scan so the most important thing is seen first. Your levers:</p>
+      <ul>
+        <li><strong>Size</strong> — bigger wins. Headlines beat body text.</li>
+        <li><strong>Weight & contrast</strong> — bold, high-contrast elements pull the eye.</li>
+        <li><strong>Color</strong> — one accent color on a muted background acts like a spotlight. (Notice how vermilion is used sparingly on this page — that's why it works.)</li>
+        <li><strong>Position</strong> — top-left gets seen first in left-to-right languages; screens are often scanned in an F or Z pattern.</li>
+        <li><strong>Isolation</strong> — an element surrounded by empty space feels important.</li>
+      </ul>
+      <div class="callout"><div class="cl-t">The squint test</div><p>Squint at any screen until it blurs. Whatever still stands out is your real hierarchy — whether you intended it or not.</p></div>`},
+    {id:"m2l2", t:"Whitespace is not wasted space", html:`
+      <p>Empty space (designers say <em>whitespace</em> even when it's dark, like this page) does three jobs: it <strong>groups</strong> related things, <strong>separates</strong> unrelated things, and gives important elements <strong>room to breathe</strong>.</p>
+      <p>The grouping effect comes from Gestalt psychology — the <strong>law of proximity</strong>: things near each other are perceived as belonging together. That's why a caption sits close to its image and far from the next section. You don't need boxes and lines to organize a page; distance alone can do it.</p>
+      <p>Beginner tell: cramming everything in because "space is available." Professional tell: cutting content until the space works. Head to the <strong>Spacing Lab</strong> to feel the difference with a slider.</p>`},
+    {id:"m2l3", t:"Alignment and the invisible grid", html:`
+      <p>Almost every polished interface sits on an invisible <strong>grid</strong> — usually 12 columns on desktop — and an invisible <strong>spacing scale</strong>, most commonly multiples of 8px (8, 16, 24, 32…). This platform uses an 8px scale; turn on X-Ray and you'll see it called out.</p>
+      <ul>
+        <li><strong>Align edges.</strong> Ragged left edges read as sloppy even when no one can say why.</li>
+        <li><strong>Pick a scale and stick to it.</strong> Random values (13px here, 22px there) create subtle visual noise.</li>
+        <li><strong>Consistency beats cleverness.</strong> If cards have 24px padding, all cards have 24px padding.</li>
+      </ul>
+      <p>Grids aren't rules for their own sake — they're how a screen made of dozens of parts still reads as one calm, intentional thing.</p>`}
+  ],
+  quiz:[
+    {q:"The fastest way to make one button feel more important than five others is:", opts:["Make all six buttons colorful","Give only that one the accent color and make the rest quiet","Add borders to everything","Use six different fonts"], a:1, why:"An accent works because of scarcity — one spotlight, not six."},
+    {q:"The 'law of proximity' says:", opts:["Important things go top-right","Things placed close together are perceived as related","Text must be near images","Buttons should be near the fold"], a:1, why:"Distance communicates relationships — no boxes required."},
+    {q:"A spacing scale (8 / 16 / 24 / 32…) exists mainly to:", opts:["Save file size","Create consistent rhythm and reduce visual noise","Make development slower","Follow Apple's rules"], a:1, why:"Consistent spacing is what makes many parts read as one calm design."},
+    {q:"You squint at your design and the cookie banner stands out more than the main headline. That means:", opts:["The design passed the test","Your hierarchy is inverted and needs fixing","Users love cookie banners","Nothing — squinting isn't real"], a:1, why:"Whatever survives the squint IS your hierarchy. Fix it if it's wrong."}
+  ]
+},
+{
+  id:"m3", num:"03", title:"Color", blurb:"Building palettes that mean something, using accents with discipline, and making sure everyone — including colorblind and low-vision users — can actually read your work.",
+  lessons:[
+    {id:"m3l1", t:"How color works in interfaces", html:`
+      <p>Interface color isn't about picking pretty combinations — it's a <strong>system of roles</strong>:</p>
+      <ul>
+        <li><strong>Background / surface</strong> — the quiet majority of every screen (here: near-black ink and charcoal panels).</li>
+        <li><strong>Text</strong> — usually 2–3 tiers: primary, secondary/muted, disabled.</li>
+        <li><strong>Accent</strong> — one strong color for actions and highlights (here: vermilion <code>#ec3013</code>).</li>
+        <li><strong>Semantic</strong> — green = success, amber = caution, red = danger. Don't fight these learned meanings.</li>
+      </ul>
+      <p>A practical starting recipe is <strong>60 / 30 / 10</strong>: roughly 60% background, 30% surfaces & secondary color, 10% accent. When the accent covers 40% of the screen, it stops being an accent and starts being noise.</p>`},
+    {id:"m3l2", t:"HSL — the designer's way to think about color", html:`
+      <p>Forget hex codes as random strings. <strong>HSL</strong> breaks any color into three human-readable dials:</p>
+      <ul>
+        <li><strong>Hue</strong> (0–360°) — which color it is: 0 red, 120 green, 240 blue.</li>
+        <li><strong>Saturation</strong> (0–100%) — how vivid vs. gray.</li>
+        <li><strong>Lightness</strong> (0–100%) — how close to black or white.</li>
+      </ul>
+      <p>This makes palette-building mechanical: keep the hue, vary lightness → you get tints and shades that automatically harmonize. Shift the hue ±30° → analogous colors. Jump 180° → a complementary pair. The <strong>Palette Lab</strong> lets you spin these dials and watch a mock app repaint itself live.</p>`},
+    {id:"m3l3", t:"Contrast & accessibility — the non-negotiable part", html:`
+      <p>Around 1 in 12 men has some form of color-vision deficiency, and everyone's vision degrades with age, glare, and cheap screens. The <strong>WCAG</strong> standard measures text contrast as a ratio:</p>
+      <ul>
+        <li><strong>4.5:1</strong> minimum for normal body text (Level AA)</li>
+        <li><strong>3:1</strong> minimum for large text (18pt+/24px, or 14pt bold)</li>
+        <li><strong>7:1</strong> for the stricter AAA level</li>
+      </ul>
+      <p>Two rules that prevent most accessibility failures: <strong>never use color as the only signal</strong> (pair red errors with an icon and message), and <strong>check your grays</strong> — light-gray-on-white "subtle" text is the most common contrast failure on the web. Prove it to yourself in the <strong>Contrast Lab</strong>.</p>`}
+  ],
+  quiz:[
+    {q:"In the 60/30/10 recipe, the 10 refers to:", opts:["Font size","The accent color's share of the screen","Number of colors allowed","Padding in pixels"], a:1, why:"Accents work through scarcity — about a tenth of the visual field."},
+    {q:"To create a lighter tint of your brand color that still harmonizes, you should change its:", opts:["Hue","Saturation only","Lightness","File format"], a:2, why:"Same hue + higher lightness = a tint that automatically belongs to the family."},
+    {q:"Minimum WCAG AA contrast for normal body text is:", opts:["2:1","3:1","4.5:1","10:1"], a:2, why:"4.5:1 for normal text; 3:1 is only acceptable for large text."},
+    {q:"A form shows errors only by turning the field border red. What's wrong?", opts:["Red is ugly","Color is the only signal — colorblind users may miss it entirely","Borders can't be red","Nothing is wrong"], a:1, why:"Pair color with an icon and a written message."}
+  ]
+},
+{
+  id:"m4", num:"04", title:"Typography", blurb:"Type is 90% of most interfaces. Learn to choose typefaces, build a size scale, and set text that people can read without noticing they're reading.",
+  lessons:[
+    {id:"m4l1", t:"Choosing typefaces without a design degree", html:`
+      <p>You need at most <strong>two</strong> typefaces: a <strong>display face</strong> with personality for headlines (this platform uses Space Grotesk) and a <strong>workhorse body face</strong> built for long reading (here, Public Sans). A third, monospaced face is optional for data and code.</p>
+      <ul>
+        <li><strong>Sans-serifs</strong> (no little feet on the letters) dominate interfaces — clean at small sizes on screens.</li>
+        <li><strong>Serifs</strong> bring editorial, traditional, or premium tone — great for headlines and articles.</li>
+        <li><strong>Test the hard letters:</strong> can you tell Il1 and O0 apart? Does it stay readable at 13px?</li>
+      </ul>
+      <div class="callout"><div class="cl-t">Studio rule</div><p>One typeface used well beats three used carelessly. When in doubt, vary weight and size — not fonts.</p></div>`},
+    {id:"m4l2", t:"The type scale — sizes that relate", html:`
+      <p>Professional interfaces don't pick sizes at random; they generate them from a <strong>ratio</strong>. Start with body size (16px is the web default) and multiply repeatedly:</p>
+      <ul>
+        <li><strong>1.2 (minor third)</strong> — calm, dense, good for apps: 16 → 19 → 23 → 28…</li>
+        <li><strong>1.333 (perfect fourth)</strong> — clear hierarchy, editorial feel: 16 → 21 → 28 → 38…</li>
+        <li><strong>1.618 (golden ratio)</strong> — dramatic, poster-like: 16 → 26 → 42…</li>
+      </ul>
+      <p>Each step communicates one level of hierarchy: page title, section title, sub-heading, body, caption. The <strong>Type Scale Lab</strong> renders the whole ladder live as you drag the ratio.</p>`},
+    {id:"m4l3", t:"Readability — line length, line height, and casing", html:`
+      <p>Three settings quietly determine whether text is comfortable:</p>
+      <ul>
+        <li><strong>Line length:</strong> 45–75 characters per line (about 60 is the sweet spot). Full-width paragraphs on a desktop monitor are exhausting — the eye loses its way traveling back.</li>
+        <li><strong>Line height:</strong> around 1.5× the font size for body text; tighter (1.1–1.3) for big headlines.</li>
+        <li><strong>Casing:</strong> ALL CAPS SLOWS READING because word shapes disappear — save it for tiny labels with wide letter-spacing (like the eyebrows on this page).</li>
+      </ul>
+      <p>And the classic beginner miss: <strong>contrast of size</strong>. If your heading is 18px and body is 16px, nobody can tell them apart. Be decisive — hierarchy should be visible from across the room.</p>`}
+  ],
+  quiz:[
+    {q:"A comfortable line length for body text is roughly:", opts:["20–30 characters","45–75 characters","100–140 characters","As wide as the screen"], a:1, why:"Beyond ~75 characters the eye struggles to find the next line."},
+    {q:"Body text line-height should usually be about:", opts:["1.0","1.5","2.5","It doesn't matter"], a:1, why:"~1.5× gives lines room without floating apart."},
+    {q:"A type scale with ratio 1.333 and 16px body gives a next step of about:", opts:["17px","21px","32px","48px"], a:1, why:"16 × 1.333 ≈ 21.3px."},
+    {q:"Why avoid long passages in ALL CAPS?", opts:["It uses more ink","Uniform word shapes make reading slower","Fonts don't support capitals","It's against WCAG"], a:1, why:"We recognize words partly by their silhouettes; caps flatten them."}
+  ]
+},
+{
+  id:"m5", num:"05", title:"UX Laws & Psychology", blurb:"A handful of research-backed laws explain most of what makes interfaces feel fast, obvious, and trustworthy. Learn them once, see them everywhere.",
+  lessons:[
+    {id:"m5l1", t:"Fitts's Law — big and close beats small and far", html:`
+      <p><strong>Fitts's Law (1954):</strong> the time to hit a target depends on its <strong>size</strong> and <strong>distance</strong>. Bigger, closer targets are faster and less error-prone. Consequences you'll now notice everywhere:</p>
+      <ul>
+        <li>Primary buttons are large; destructive ones are smaller and further away.</li>
+        <li>Mobile tap targets should be at least ~44×44px — fingers are not cursors.</li>
+        <li>Screen edges and corners are effectively infinite targets (your cursor stops there) — which is why menus and close buttons live in corners.</li>
+      </ul>
+      <p>Don't take it on faith — play the <strong>Fitts's Law Range</strong> in Labs and watch your own reaction times prove it.</p>`},
+    {id:"m5l2", t:"Hick's Law & Miller's number — the cost of choice", html:`
+      <p><strong>Hick's Law:</strong> decision time grows with the number of options. Every choice you add taxes the user. This is why good onboarding asks one question per screen, and why a menu of 40 items feels like homework.</p>
+      <p><strong>Miller's 7±2:</strong> working memory holds roughly 4–7 chunks. That's why phone numbers are chunked (312-555-0134), why navigation bars stay short, and why long forms are split into steps.</p>
+      <p>The design move both laws point to is <strong>progressive disclosure</strong>: show the essential few, tuck the rest behind "More". Try the <strong>Hick's Law Timer</strong> in Labs — finding one button among 4 vs. 16 is a felt difference.</p>`},
+    {id:"m5l3", t:"Affordance, feedback, and Jakob's Law", html:`
+      <p>Three ideas that make interfaces feel "obvious":</p>
+      <ul>
+        <li><strong>Affordance</strong> — things should look like what they do. Buttons look pressable (raised, filled, rounded); links look clickable; sliders look draggable. When flat design strips these cues too far, users hesitate.</li>
+        <li><strong>Feedback</strong> — every action gets an immediate, visible response: buttons depress, saves confirm, loading states appear. Silence after a click reads as "broken." (Notice the XP toast in this platform — that's feedback doing its job.)</li>
+        <li><strong>Jakob's Law</strong> — users spend most of their time on <em>other</em> sites, so they expect yours to work the same way. The logo goes top-left and links home; the cart is top-right. Innovate on your product, not on conventions.</li>
+      </ul>`}
+  ],
+  quiz:[
+    {q:"Per Fitts's Law, the quickest target to hit is:", opts:["Small and far","Small and close","Large and close","Large and far"], a:2, why:"Size up, distance down = faster, fewer errors."},
+    {q:"Hick's Law suggests a settings page with 40 visible toggles should be:", opts:["Alphabetized","Grouped and progressively disclosed","Given brighter colors","Moved to the homepage"], a:1, why:"Reduce simultaneous choices; reveal detail on demand."},
+    {q:"A user clicks 'Save' and nothing visibly happens (though it worked). The missing ingredient is:", opts:["Affordance","Feedback","Contrast","A bigger font"], a:1, why:"Every action needs a visible response, or users assume failure."},
+    {q:"Jakob's Law argues you should:", opts:["Never innovate","Follow familiar conventions for common patterns","Copy competitors' branding","Put navigation at the bottom"], a:1, why:"Meet expectations on conventions; spend novelty on your actual product."}
+  ]
+},
+{
+  id:"m6", num:"06", title:"Practice & Process", blurb:"Wireframes, usability tests, and critique — the working habits that turn knowledge into a portfolio.",
+  lessons:[
+    {id:"m6l1", t:"Wireframing — designing at low fidelity on purpose", html:`
+      <p>A <strong>wireframe</strong> is a deliberately rough blueprint: gray boxes, placeholder text, no colors, no photos. The roughness is the point — it keeps the conversation on <em>structure</em> (what goes where, what's most important) instead of taste ("I don't like that blue").</p>
+      <ul>
+        <li><strong>Start on paper.</strong> Sketch 6–8 tiny layout variants in ten minutes before committing to one.</li>
+        <li><strong>One primary action per screen.</strong> If you can't name it, the screen isn't defined yet.</li>
+        <li><strong>Real-ish content beats lorem ipsum</strong> — "Order #4189 · Arriving Thursday" reveals layout problems that fake text hides.</li>
+      </ul>
+      <p>The <strong>Playground</strong> tab is a mini wireframing bench: stack elements, adjust hierarchy, and try the same screen at mobile and desktop widths.</p>`},
+    {id:"m6l2", t:"Usability testing — five users, no lab coat required", html:`
+      <p>The most valuable UX skill costs nothing: <strong>watch a real person try to use the thing.</strong> Research by Nielsen suggests about five users uncover most usability problems.</p>
+      <ul>
+        <li>Give a task, not a tour: "Find and book the cheapest Tuesday flight" — then be quiet.</li>
+        <li>Ask them to <strong>think aloud</strong>; the gold is in "hmm, I expected this to…"</li>
+        <li>Never explain or defend. If you must explain it, the design failed — and that's a finding, not an insult.</li>
+        <li>Watch for the gap between what people <em>say</em> ("that was easy!") and what they <em>did</em> (three wrong clicks and a sigh).</li>
+      </ul>`},
+    {id:"m6l3", t:"Critique, portfolios, and your next 90 days", html:`
+      <p><strong>Learning to see</strong> is the real skill. Build it by critiquing daily: pick any app and ask — what's the visual hierarchy? Where's the accent color spent? What convention does it follow or break? The <strong>Challenges</strong> tab trains exactly this muscle.</p>
+      <p>A beginner portfolio needs only <strong>2–3 case studies</strong> that show process, not just screens: the problem → research/assumptions → sketches → final design → what you'd test next. Redesigning a flawed local-business site or a government form beats another imaginary music app.</p>
+      <div class="callout"><div class="cl-t">A realistic 90-day path</div><p>Weeks 1–4: finish these modules, run every lab twice. Weeks 5–8: recreate 3 screens you admire, pixel by pixel, in Figma (free). Weeks 9–12: one full case study, tested on two friends, written up honestly.</p></div>`}
+  ],
+  quiz:[
+    {q:"Wireframes are intentionally rough because:", opts:["Designers are lazy","It keeps feedback focused on structure, not taste","Gray is fashionable","Clients prefer it"], a:1, why:"Low fidelity steers the conversation to layout and priority."},
+    {q:"During a usability test, the participant is stuck. You should:", opts:["Explain how it works","Stay quiet and note where they struggled","End the session","Give them a hint immediately"], a:1, why:"The struggle IS the data. Explaining destroys it."},
+    {q:"About how many test users find the majority of usability problems?", opts:["1","5","50","500"], a:1, why:"Nielsen's classic finding: ~5 users surface most issues."},
+    {q:"The strongest beginner portfolio piece shows:", opts:["The most screens","Process — problem, exploration, decisions, and testing","Only the final polished visuals","Famous brand logos"], a:1, why:"Hiring managers hire thinking, not just pixels."}
+  ]
+}
+,
+{
+  id:"m7", num:"07", title:"The Modern Toolchain: Figma & Friends", blurb:"The tools working designers actually open every morning — with a deep dive into Figma, the industry's default, and an honest map of everything around it.",
+  lessons:[
+    {id:"m7l1", t:"Figma — the industry's home base", html:`
+      <p><strong>Figma</strong> is where the overwhelming majority of interface design happens today. It runs in the browser, it's free for individuals, and — the feature that ended the tool wars — it's <strong>multiplayer</strong>: your whole team designs in the same file at once, like Google Docs for pixels.</p>
+      <p>The landscape around it, honestly mapped:</p>
+      <ul>
+        <li><strong>Sketch</strong> — the Mac-only pioneer that defined modern UI tools (2010s). Still respected, still used at some Apple-centric shops, but no longer where the industry lives.</li>
+        <li><strong>Adobe XD</strong> — effectively discontinued; Adobe stopped active development after its attempted Figma acquisition collapsed in 2023. Don't invest learning time here.</li>
+        <li><strong>Penpot</strong> — the open-source Figma alternative. Worth knowing exists; some privacy-conscious teams use it.</li>
+      </ul>
+      <div class="callout"><div class="cl-t">Studio rule</div><p>Learn Figma deeply and the concepts transfer everywhere — every modern tool copies its vocabulary: frames, components, auto layout, variants.</p></div>
+      <p>Inside a Figma file, the hierarchy is: <strong>File → Pages → Frames → Layers</strong>. A <em>frame</em> is a screen or container (what older tools called an artboard) — and unlike a plain group, a frame can clip content, own a layout, and carry constraints. That distinction matters daily.</p>`},
+    {id:"m7l2", t:"Auto Layout — the skill that separates beginners from hires", html:`
+      <p><strong>Auto Layout</strong> is Figma's system for making designs that <em>respond</em>: buttons that grow with their label, lists that reflow when items are added, cards that stack and space themselves. It's the single most-tested Figma skill in job interviews, and it's really just four decisions:</p>
+      <ul>
+        <li><strong>Direction</strong> — do children flow horizontally or vertically?</li>
+        <li><strong>Gap</strong> — how much space between children?</li>
+        <li><strong>Padding</strong> — how much space inside the container's edges?</li>
+        <li><strong>Sizing</strong> — does each element <strong>hug</strong> its content, <strong>fill</strong> the container, or stay <strong>fixed</strong>?</li>
+      </ul>
+      <p>If you've ever heard developers talk about "flexbox," this is the same mental model — which is exactly why auto-layout designs hand off to engineers so cleanly. Go feel it in the <strong>Auto Layout Sandbox</strong> in Labs: same four dials, live result.</p>
+      <p>Its sibling concept, <strong>constraints</strong>, controls what happens when a frame resizes: pin a nav bar to the top, a FAB to the bottom-right, let content stretch. Auto layout + constraints = designs that survive contact with real screens.</p>`},
+    {id:"m7l3", t:"Components, variants, styles & variables", html:`
+      <p>The professional Figma workflow is built on <strong>reuse</strong>:</p>
+      <ul>
+        <li><strong>Component</strong> — a master element (say, a button). Every copy is an <strong>instance</strong>; edit the master and all instances update. This is how a 200-screen product stays consistent.</li>
+        <li><strong>Variants</strong> — one component, many states: primary/secondary, default/hover/disabled, small/medium/large, all switchable from a dropdown.</li>
+        <li><strong>Styles</strong> — saved colors, text settings, and effects. Change "brand/primary" once, and every screen using it repaints.</li>
+        <li><strong>Variables (tokens)</strong> — the newer, more powerful version of styles: named values like <code>color/bg/surface</code> that can switch en masse for light/dark themes.</li>
+      </ul>
+      <p>Published to a <strong>team library</strong>, these become a design system other files subscribe to — Module 08's whole subject. The habit to build now: <em>never</em> style the same button by hand twice.</p>`},
+    {id:"m7l4", t:"Prototyping, Dev Mode, and the tools around the tool", html:`
+      <p><strong>Prototyping in Figma:</strong> draw connections between frames, choose a trigger (tap, hover, delay) and an animation. <strong>Smart Animate</strong> matches layers by name across frames and tweens between them — enough fidelity for most usability tests without writing code.</p>
+      <p><strong>Handoff:</strong> <strong>Dev Mode</strong> lets engineers inspect any element for exact sizes, colors, and generated CSS/iOS/Android snippets. This replaced an entire generation of "redline" handoff tools (Zeplin, Avocode) — know the names, they still appear in older job posts.</p>
+      <p>The supporting cast every team touches:</p>
+      <ul>
+        <li><strong>FigJam / Miro</strong> — infinite whiteboards for workshops, flows, and affinity mapping.</li>
+        <li><strong>ProtoPie, Principle, Framer</strong> — when a prototype needs logic, sensors, or real code that Figma can't fake.</li>
+        <li><strong>Maze, UserTesting, Optimal Workshop, Hotjar</strong> — research and testing (Module 11).</li>
+        <li><strong>Storybook</strong> — where engineers keep the <em>coded</em> versions of your components.</li>
+      </ul>
+      <p>The full annotated directory lives in the <strong>Tool Atlas</strong> tab — and the <strong>Figma Shortcut Trainer</strong> in Labs will drill the muscle memory.</p>`}
+  ],
+  quiz:[
+    {q:"The feature that made Figma the industry standard was primarily:", opts:["Better fonts","Real-time multiplayer collaboration in the browser","It was Mac-only","Its price went up"], a:1, why:"Multiplayer + browser-based killed the file-emailing workflow overnight."},
+    {q:"In Figma, editing a component's master will:", opts:["Do nothing to copies","Update every instance of it across your designs","Delete the instances","Only work in Dev Mode"], a:1, why:"That single-source-of-truth link is the entire point of components."},
+    {q:"Auto Layout's 'hug' sizing means an element:", opts:["Fills all available space","Stays a fixed pixel size","Shrinks or grows to fit its own content","Centers itself"], a:2, why:"Hug = sized by content; fill = sized by container; fixed = sized by you."},
+    {q:"A modern team needs engineer handoff specs. The current standard approach is:", opts:["Email annotated screenshots","Print redlines","Figma Dev Mode inspection","Rebuild everything in XD"], a:2, why:"Dev Mode exposes measurements, tokens, and code snippets directly from the design file."},
+    {q:"Which tool should a beginner in 2026 NOT invest learning time in?", opts:["Figma","FigJam","Adobe XD","Storybook basics"], a:2, why:"XD is in maintenance mode — Adobe stopped active development after 2023."}
+  ]
+},
+{
+  id:"m8", num:"08", title:"Design Systems", blurb:"How Google, Shopify, and IBM design at the scale of thousands of screens: tokens, components, patterns, and documentation — the grammar of professional product design.",
+  lessons:[
+    {id:"m8l1", t:"What a design system actually is", html:`
+      <p>A <strong>design system</strong> is a product's single source of truth: the tokens, components, patterns, and written rules that let fifty designers and five hundred engineers ship screens that look like one person made them.</p>
+      <p>The layer cake, bottom to top:</p>
+      <ul>
+        <li><strong>Foundations/tokens</strong> — named colors, type scale, spacing scale, radii, shadows.</li>
+        <li><strong>Components</strong> — buttons, inputs, cards, modals built from those tokens.</li>
+        <li><strong>Patterns</strong> — how components combine: a login flow, a data table with filters, an empty state.</li>
+        <li><strong>Documentation</strong> — when to use which, and why. The words matter as much as the pixels.</li>
+      </ul>
+      <p>Study the public greats — they're free masterclasses: Google's <strong>Material Design</strong>, Apple's <strong>Human Interface Guidelines</strong>, Shopify's <strong>Polaris</strong>, IBM's <strong>Carbon</strong>, Atlassian's system. Reading one cover-to-cover teaches more than most courses.</p>`},
+    {id:"m8l2", t:"Atomic design & component anatomy", html:`
+      <p>Brad Frost's <strong>atomic design</strong> gives systems a shared vocabulary:</p>
+      <ul>
+        <li><strong>Atoms</strong> — indivisible bits: a label, an icon, an input.</li>
+        <li><strong>Molecules</strong> — small working units: label + input + helper text = a form field.</li>
+        <li><strong>Organisms</strong> — substantial sections: a header, a product card grid.</li>
+        <li><strong>Templates & pages</strong> — layouts, then layouts with real content.</li>
+      </ul>
+      <p>Every interactive component also needs its full <strong>state anatomy</strong> designed — not just the pretty default. The professional checklist: <strong>default, hover, focus, active/pressed, disabled, loading, error</strong> — and for containers, the <strong>empty state</strong>. Beginners design one state; systems designers design eight. See and toggle all of them in the <strong>Component States Lab</strong>.</p>`},
+    {id:"m8l3", t:"Design tokens & theming", html:`
+      <p><strong>Tokens</strong> are named design decisions. The craft is in the naming — two tiers:</p>
+      <ul>
+        <li><strong>Primitive tokens</strong> describe the value: <code>red-500</code>, <code>space-16</code>, <code>font-size-lg</code>.</li>
+        <li><strong>Semantic tokens</strong> describe the <em>job</em> and point at primitives: <code>color/action/primary</code> → red-500; <code>color/bg/surface</code> → gray-900.</li>
+      </ul>
+      <p>Why bother? Because semantic naming is what makes <strong>theming</strong> nearly free: flip what <code>color/bg/surface</code> points to and the entire product switches to light mode — no screen-by-screen repainting. It's also why rebrands at token-driven companies take weeks, not years.</p>
+      <div class="callout"><div class="cl-t">Meta moment</div><p>Open this file's source and you'll find the same idea: CSS variables like <code>--vermilion</code> and <code>--panel</code> drive every color on this page. This platform is token-built.</p></div>`}
+  ],
+  quiz:[
+    {q:"In atomic design, a search field (label + input + button) is a:", opts:["Atom","Molecule","Organism","Template"], a:1, why:"Small functional units composed of atoms are molecules."},
+    {q:"A semantic token like color/action/primary is valuable because:", opts:["It's shorter to type","Changing what it points to re-themes the product globally","Engineers can't read hex codes","It renders faster"], a:1, why:"Semantic indirection is what makes theming and rebrands cheap."},
+    {q:"Which state is NOT part of a complete button's design?", opts:["Hover","Disabled","Loading","Compiled"], a:3, why:"Default, hover, focus, active, disabled, loading, error — 'compiled' isn't a UI state."},
+    {q:"The best free way to study world-class system thinking is:", opts:["Guessing","Reading public systems like Material, HIG, Polaris, and Carbon","Buying stock templates","Only using dribbble"], a:1, why:"The giants publish their reasoning openly — read it."}
+  ]
+},
+{
+  id:"m9", num:"09", title:"Responsive, Mobile & Platforms", blurb:"Designing for a world of thumbs, notches, and infinite screen sizes — plus the real differences between iOS and Android conventions.",
+  lessons:[
+    {id:"m9l1", t:"Responsive design — one design, every width", html:`
+      <p><strong>Responsive design</strong> means the layout adapts fluidly to any screen. The working method is <strong>mobile-first</strong>: design the narrow version first (it forces ruthless prioritization), then let the layout <em>earn</em> complexity as space appears.</p>
+      <ul>
+        <li><strong>Breakpoints</strong> — widths where the layout restructures. Common set: ~600px (tablet), ~900–1024px (small desktop), ~1200px+ (wide). This very platform collapses its sidebar below 900px — resize the window and watch.</li>
+        <li><strong>Reflow patterns</strong> — columns stack, nav collapses into menus, side-by-side becomes vertical, tables become cards.</li>
+        <li><strong>Fluid, not fixed</strong> — think in percentages and max-widths, not pixel-perfect canvases.</li>
+      </ul>
+      <p>Drag the width slider in the <strong>Breakpoint Lab</strong> to watch a page restructure itself in real time.</p>`},
+    {id:"m9l2", t:"Mobile ergonomics — designing for thumbs", html:`
+      <p>Phones aren't small desktops; they're held in hands. Physical facts that drive mobile layout:</p>
+      <ul>
+        <li><strong>The thumb zone</strong> — the bottom third of the screen is easy; the top corners are a stretch. That's why tab bars, primary actions, and gestures live at the bottom of modern apps.</li>
+        <li><strong>Touch targets</strong> — minimum ~44×44pt (Apple) / 48×48dp (Google). Fingers are imprecise and occlude what they touch.</li>
+        <li><strong>Reachability beats density</strong> — one comfortable action beats three cramped ones.</li>
+        <li><strong>Gestures need visible hints</strong> — swipe-to-delete is fine <em>if</em> something suggests it exists. Invisible gestures are mystery meat.</li>
+      </ul>
+      <p>Design mobile screens at real size on your actual phone (Figma's mirror app does this) — what looks fine zoomed out on a monitor is often unusable in the hand.</p>`},
+    {id:"m9l3", t:"iOS vs Android — respecting the platform", html:`
+      <p>Jakob's Law applies per-platform: iPhone users expect iOS conventions (<strong>Human Interface Guidelines</strong>), Android users expect <strong>Material Design</strong>. The differences that actually bite:</p>
+      <ul>
+        <li><strong>Navigation:</strong> iOS leans on bottom tab bars + left-edge back swipe; Android has a system-wide back gesture and historically more top app bars and drawers.</li>
+        <li><strong>Typography:</strong> SF Pro on iOS, Roboto/Google Sans on Android — with different default sizes and weights.</li>
+        <li><strong>Controls:</strong> switches, pickers, dialogs, and share sheets all look and behave differently. Using an iOS-style picker on Android reads as "cheap port."</li>
+        <li><strong>Dark mode & dynamic type:</strong> both platforms let users demand larger text and dark themes — designs must survive both.</li>
+      </ul>
+      <p>The professional move: design the <em>flow</em> once, then let each platform's native components express it.</p>`}
+  ],
+  quiz:[
+    {q:"Mobile-first means:", opts:["Only designing for phones","Designing the constrained version first, then expanding","Testing on iPhones before Androids","Making desktop sites smaller"], a:1, why:"Constraint forces prioritization; wider layouts then earn their complexity."},
+    {q:"The easiest area for a thumb on a phone is:", opts:["Top-left corner","Top-right corner","The bottom third","The exact center"], a:2, why:"That's why tab bars and primary actions moved to the bottom."},
+    {q:"Minimum recommended touch target size is roughly:", opts:["16×16px","24×24px","44–48px","100×100px"], a:2, why:"Apple says 44pt, Google says 48dp — same idea."},
+    {q:"Shipping an app with iOS-style controls on Android mainly violates:", opts:["Fitts's Law","Jakob's Law — platform users' learned expectations","Hick's Law","WCAG"], a:1, why:"Users expect their platform's conventions; breaking them reads as broken."}
+  ]
+},
+{
+  id:"m10", num:"10", title:"Interaction Design & Motion", blurb:"Microinteractions, animation timing, and the prototyping fidelity ladder — how interfaces come alive without becoming carnival rides.",
+  lessons:[
+    {id:"m10l1", t:"Microinteractions — the smallest unit of delight", html:`
+      <p>A <strong>microinteraction</strong> is a tiny, complete moment: pull-to-refresh, the heart that pops when you like something, a password field revealing its strength. Dan Saffer's anatomy:</p>
+      <ul>
+        <li><strong>Trigger</strong> — what starts it (a tap, a scroll, an event).</li>
+        <li><strong>Rules</strong> — what happens, invisibly.</li>
+        <li><strong>Feedback</strong> — what the user sees, hears, or feels.</li>
+        <li><strong>Loops & modes</strong> — what changes over time or with repetition.</li>
+      </ul>
+      <p>Microinteractions carry a shocking share of how "premium" a product feels — and of its personality. The XP toast in this platform's corner is one: trigger (you complete something), rules (bank XP, once), feedback (the toast), loop (levels grow).</p>`},
+    {id:"m10l2", t:"Motion principles — timing is everything", html:`
+      <p>Animation in interfaces has three legitimate jobs: <strong>orient</strong> (where did that panel come from?), <strong>connect</strong> (this card became that page), and <strong>confirm</strong> (your tap registered). Decoration is a distant fourth.</p>
+      <ul>
+        <li><strong>Duration:</strong> most UI motion lives between <strong>150–400ms</strong>. Under 100ms reads as instant; over 500ms reads as sluggish. Small elements move faster than large ones.</li>
+        <li><strong>Easing:</strong> nothing in nature moves linearly. <strong>Ease-out</strong> (fast start, gentle landing) for things entering; <strong>ease-in</strong> for things leaving; <strong>ease-in-out</strong> for things moving across.</li>
+        <li><strong>Choreography:</strong> stagger related items by 20–50ms so they read as a sequence, not an explosion.</li>
+        <li><strong>Respect <code>prefers-reduced-motion</code></strong> — vestibular disorders make big motion physically unpleasant. (This platform honors it; check the CSS.)</li>
+      </ul>
+      <p>Feel the difference between curves yourself in the <strong>Motion & Easing Lab</strong>.</p>`},
+    {id:"m10l3", t:"The prototyping fidelity ladder", html:`
+      <p>Prototyping isn't one activity — it's a ladder, and skilled designers pick the <em>lowest</em> rung that answers the current question:</p>
+      <ul>
+        <li><strong>Paper sketches</strong> — is the concept even right? (minutes)</li>
+        <li><strong>Clickable wireframes</strong> — does the flow make sense? (hours)</li>
+        <li><strong>Hi-fi Figma prototype with Smart Animate</strong> — does it feel right? Can users complete tasks? (days)</li>
+        <li><strong>Logic-capable tools (ProtoPie, Framer) or real code</strong> — does the data, input, or sensor behavior work? (when it matters)</li>
+      </ul>
+      <p>The classic failure is polishing a hi-fi prototype of the wrong idea. Fidelity is a cost — spend it only after cheaper rungs have earned it. As the saying goes: <em>prototype as if you're right, test as if you're wrong.</em></p>`}
+  ],
+  quiz:[
+    {q:"A good default duration for a small UI transition is about:", opts:["50ms","200–300ms","800ms","2 seconds"], a:1, why:"150–400ms is the comfort zone; small elements sit at the fast end."},
+    {q:"An element entering the screen should usually use:", opts:["Linear easing","Ease-out (fast start, gentle stop)","Ease-in","No animation ever"], a:1, why:"Ease-out feels responsive on arrival; linear feels robotic."},
+    {q:"You want to know if a signup flow's steps make sense. The right fidelity is:", opts:["Polished hi-fi with animations","Clickable wireframes","Production code","A paper sketch of the logo"], a:1, why:"Flow questions need flow-level fidelity — nothing more."},
+    {q:"prefers-reduced-motion exists because:", opts:["Animations drain GPUs","Some users experience real discomfort or vertigo from motion","Designers dislike animation","It's an SEO factor"], a:1, why:"It's an accessibility setting — honoring it is non-negotiable."}
+  ]
+},
+{
+  id:"m11", num:"11", title:"UX Research Methods", blurb:"Interviews, card sorting, tree tests, A/B tests, journey maps — the full research toolkit, and how to pick the right method for the question.",
+  lessons:[
+    {id:"m11l1", t:"Choosing a method — the research compass", html:`
+      <p>Every method answers a different kind of question. The classic compass has two axes:</p>
+      <ul>
+        <li><strong>Attitudinal vs behavioral</strong> — what people <em>say</em> vs what they <em>do</em>. (They diverge constantly.)</li>
+        <li><strong>Qualitative vs quantitative</strong> — deep <em>why</em> from few people vs measurable <em>what/how many</em> from many.</li>
+      </ul>
+      <p>Mapping the staples:</p>
+      <ul>
+        <li><strong>Interviews & diary studies</strong> — attitudinal + qualitative: motivations, context, language.</li>
+        <li><strong>Usability tests</strong> — behavioral + qualitative: where the design fails, and why.</li>
+        <li><strong>Surveys</strong> — attitudinal + quantitative: how widespread an opinion is.</li>
+        <li><strong>Analytics, heatmaps, A/B tests</strong> — behavioral + quantitative: what's actually happening at scale.</li>
+      </ul>
+      <div class="callout"><div class="cl-t">Studio rule</div><p>"Would you use this?" is a worthless question — people are kind and terrible at predicting themselves. Watch behavior; ask about the past, not the hypothetical future.</p></div>`},
+    {id:"m11l2", t:"IA research — card sorting, tree testing, first-click", html:`
+      <p>When the question is "how should content be organized?", three cheap, powerful methods apply:</p>
+      <ul>
+        <li><strong>Card sorting</strong> — users group your content items into piles that make sense to <em>them</em>. <strong>Open</strong> sorts let them name the groups (great for discovering mental models); <strong>closed</strong> sorts test your proposed categories.</li>
+        <li><strong>Tree testing</strong> — strip the UI away entirely and ask users to find things in your bare menu structure: "Where would you look to change your billing date?" It isolates the IA from visual design.</li>
+        <li><strong>First-click testing</strong> — show a screen, give a task, record only the first click. If the first click is right, users usually succeed; if wrong, they usually fail.</li>
+      </ul>
+      <p>Tooling: <strong>Optimal Workshop</strong> is the classic for card sorts and tree tests; <strong>Maze</strong> and <strong>UserTesting</strong> run remote unmoderated tests; <strong>Hotjar</strong> shows heatmaps and session recordings; <strong>Dovetail</strong> stores and tags research so it doesn't die in someone's drive.</p>`},
+    {id:"m11l3", t:"Synthesis — from sticky notes to decisions", html:`
+      <p>Raw research is noise until synthesized. The standard pipeline:</p>
+      <ul>
+        <li><strong>Affinity mapping</strong> — put every observation on a note (FigJam/Miro shine here), cluster similar ones, name the clusters. Themes emerge that no single interview showed.</li>
+        <li><strong>Personas</strong> — condensed, research-based user archetypes. Useful as shared shorthand; dangerous when invented from imagination.</li>
+        <li><strong>Journey maps</strong> — a user's steps, thoughts, and emotions across an experience, highlighting the pain points worth fixing.</li>
+        <li><strong>Jobs-to-be-done (JTBD)</strong> — reframe features as hires: "I hire this app to make me look prepared in Monday's meeting." It keeps teams anchored to motivation, not demographics.</li>
+      </ul>
+      <p>The output of synthesis is never a report nobody reads — it's a <strong>prioritized list of design decisions</strong> with evidence attached.</p>`}
+  ],
+  quiz:[
+    {q:"Users tell you they love a feature, but analytics show nobody uses it. This gap is:", opts:["Impossible","The attitudinal vs behavioral divide","A bug in the analytics","Proof surveys are perfect"], a:1, why:"What people say and do routinely diverge — that's why we measure both."},
+    {q:"To test whether YOUR proposed menu categories work, use:", opts:["An open card sort","A closed card sort or tree test","A brand survey","A/B testing colors"], a:1, why:"Closed sorts and tree tests validate a proposed structure; open sorts discover new ones."},
+    {q:"Affinity mapping is used to:", opts:["Schedule interviews","Cluster raw observations into themes","Pick color palettes","Measure page speed"], a:1, why:"It turns scattered notes into named, shared insights."},
+    {q:"The question 'Would you use this feature?' is weak because:", opts:["It's too short","People are poor predictors of their own future behavior","It's illegal in research","Users never answer"], a:1, why:"Ask about past behavior; observe present behavior; distrust predictions."}
+  ]
+},
+{
+  id:"m12", num:"12", title:"Accessibility Deep Dive", blurb:"Beyond contrast ratios: keyboards, screen readers, ARIA, and the POUR principles — designing products that work for every body, which turns out to mean better products for everybody.",
+  lessons:[
+    {id:"m12l1", t:"POUR — the four pillars of WCAG", html:`
+      <p>All of WCAG hangs on four requirements. Interfaces must be:</p>
+      <ul>
+        <li><strong>Perceivable</strong> — information can't depend on one sense: images need alt text, video needs captions, color needs a second channel.</li>
+        <li><strong>Operable</strong> — every function works by keyboard alone; nothing traps focus; nothing flashes dangerously; users get enough time.</li>
+        <li><strong>Understandable</strong> — plain language, predictable navigation, errors that explain themselves.</li>
+        <li><strong>Robust</strong> — semantic, standards-based structure that assistive technologies can parse.</li>
+      </ul>
+      <p>And drop the mental image of a small "disabled users" segment. Disability is a spectrum of <strong>permanent</strong> (one arm), <strong>temporary</strong> (broken wrist), and <strong>situational</strong> (holding a baby, bright sunlight, loud train). Accessible design is design for your own future self on a bad day.</p>`},
+    {id:"m12l2", t:"Keyboards, focus, and screen readers", html:`
+      <p>The fastest accessibility audit costs nothing: <strong>unplug your mouse.</strong></p>
+      <ul>
+        <li><strong>Everything reachable by Tab</strong>, in a logical order that matches the visual order.</li>
+        <li><strong>Visible focus</strong> — the outline showing where you are. Deleting it for looks (<code>outline: none</code>) is the web's most common accessibility crime. Tab around this platform: the peach outline is deliberate.</li>
+        <li><strong>Skip links</strong> — let keyboard users jump past long navigation.</li>
+      </ul>
+      <p><strong>Screen readers</strong> (VoiceOver on Apple, NVDA/JAWS on Windows, TalkBack on Android) read structure, not pixels. They live on:</p>
+      <ul>
+        <li><strong>Semantic headings</strong> in order (h1 → h2 → h3) — blind users navigate by heading list.</li>
+        <li><strong>Alt text</strong> that conveys purpose ("Delete invoice", not "trash icon red button image").</li>
+        <li><strong>Real buttons and links</strong> — a styled div is invisible to assistive tech.</li>
+      </ul>
+      <p><strong>ARIA</strong> attributes can add missing semantics — but the first rule of ARIA is <em>don't use ARIA</em> if a native element already does the job.</p>`},
+    {id:"m12l3", t:"Accessible components & how to test", html:`
+      <p>Where the failures cluster, and the fixes:</p>
+      <ul>
+        <li><strong>Forms:</strong> every input gets a real, always-visible label (placeholders vanish the moment you type). Errors: in text, next to the field, specific about the fix.</li>
+        <li><strong>Color independence:</strong> status shown by color alone (red dot vs green dot) fails ~8% of men — pair with icons or words.</li>
+        <li><strong>Motion:</strong> honor reduced-motion; never make animation the only carrier of information.</li>
+        <li><strong>Targets & zoom:</strong> 44px minimum targets; layouts must survive 200% browser zoom.</li>
+      </ul>
+      <p>The testing stack, cheapest first: keyboard-only pass → automated scan (<strong>axe DevTools</strong>, <strong>Lighthouse</strong> — they catch maybe a third of issues) → five minutes with a real screen reader → ideally, testing with disabled users. Then go earn it: the <strong>Accessibility Audit challenge</strong> in the Challenges tab has real failures waiting.</p>`}
+  ],
+  quiz:[
+    {q:"In POUR, requiring captions on video falls under:", opts:["Perceivable","Operable","Understandable","Robust"], a:0, why:"Information can't rely solely on hearing — that's perceivability."},
+    {q:"The cheapest meaningful accessibility test is:", opts:["Hiring an agency","Navigating your product by keyboard only","Printing the screens","Asking marketing"], a:1, why:"Tab through everything — failures announce themselves in minutes."},
+    {q:"outline: none with no replacement is harmful because:", opts:["It slows rendering","Keyboard users lose the only indicator of where they are","It breaks SEO","Designers prefer shadows"], a:1, why:"No visible focus = keyboard users navigating blind."},
+    {q:"The first rule of ARIA is:", opts:["Use it on every element","Don't use it when a native HTML element already provides the semantics","Only use it on buttons","It's required by law"], a:1, why:"Native elements come with free, battle-tested semantics."},
+    {q:"Automated tools like axe and Lighthouse catch roughly:", opts:["100% of issues","About a third — the rest needs human testing","Nothing useful","Only color issues"], a:1, why:"Automation is a floor, not a certification."}
+  ]
+},
+{
+  id:"m13", num:"13", title:"The Industry: Roles, Teams & Getting Hired", blurb:"Job titles decoded, how design actually fits into product teams and sprints, and the honest playbook for portfolios, interviews, and your first role.",
+  lessons:[
+    {id:"m13l1", t:"Decoding the job titles", html:`
+      <p>The titles overlap messily, but the working taxonomy:</p>
+      <ul>
+        <li><strong>Product Designer</strong> — the most common title today: end-to-end UX + UI on a product team. If you're aiming at one title, aim here.</li>
+        <li><strong>UX Designer / UI Designer</strong> — the split versions: flows & research vs visual & interaction craft. More common at agencies and older orgs.</li>
+        <li><strong>UX Researcher</strong> — full-time research: studies, synthesis, insight ops.</li>
+        <li><strong>Content Designer / UX Writer</strong> — the words in the interface: labels, errors, empty states. Enormously undervalued leverage.</li>
+        <li><strong>Design Systems Designer</strong> — builds and governs the component library.</li>
+        <li><strong>DesignOps</strong> — tooling, processes, hiring, rituals that let design teams scale.</li>
+      </ul>
+      <p>Adjacent and often confused: <strong>graphic/brand designers</strong> (marketing, identity — different craft) and <strong>UX engineers</strong> (the design–code bridge).</p>`},
+    {id:"m13l2", t:"How design fits into a product team", html:`
+      <p>You'll almost certainly work in a <strong>triad</strong>: a product manager (owns the <em>why/what</em>), an engineering lead (owns the <em>how</em>), and you (own the <em>experience</em>). Most teams run <strong>agile</strong>: work in 1–2 week <strong>sprints</strong>, with designers typically working one sprint ahead of engineering — researching and designing what gets built next.</p>
+      <p>Rituals you'll live in:</p>
+      <ul>
+        <li><strong>Design critique</strong> — structured peer feedback. Give it well: describe what you see, ask about intent, tie feedback to user goals — never "I don't like it."</li>
+        <li><strong>Standups, refinement, retros</strong> — the agile heartbeat.</li>
+        <li><strong>Handoff & QA</strong> — specs via Dev Mode, then <em>design QA</em>: checking the built product against the design before release. Skipping this is how good designs ship broken.</li>
+      </ul>
+      <p>The underrated skill: <strong>writing</strong>. Decisions get made in documents and Slack threads. Designers who can argue a case in clear prose punch far above their weight.</p>`},
+    {id:"m13l3", t:"Portfolios, interviews, and the first job", html:`
+      <p>The hiring loop, demystified:</p>
+      <ul>
+        <li><strong>Portfolio screen</strong> — 2–3 deep case studies beat 10 shallow ones. Structure each: problem → constraints → process (show the ugly sketches!) → decisions and <em>why</em> → outcome → what you'd do next. Recruiters spend ~2 minutes; make the story skimmable.</li>
+        <li><strong>Portfolio walkthrough</strong> — present one project in 15–20 minutes. They're testing communication as much as craft.</li>
+        <li><strong>App critique</strong> — "open Spotify and critique it." Everything from the Challenges tab is training for exactly this: hierarchy, conventions, states, accessibility.</li>
+        <li><strong>Whiteboard / take-home challenge</strong> — a design problem, live or timed. The evaluation is your <em>process</em>: clarifying questions, stated assumptions, exploring options, reasoning about trade-offs. Never jump straight to drawing screens.</li>
+      </ul>
+      <p>Breaking in without experience: redesigns with rigor (research a real product's real problem), volunteer for nonprofits, contribute to open-source design, document everything. Stay sharp with NN/g articles, Laws of UX, and by rebuilding interfaces you admire. Your eye develops before your hands — this whole studio has been training the eye.</p>`}
+  ],
+  quiz:[
+    {q:"The most common end-to-end design title at product companies today is:", opts:["Web master","Product Designer","Art Director","UX Ninja"], a:1, why:"Product Designer = UX + UI ownership on a product team."},
+    {q:"In the product triad, the designer primarily owns:", opts:["The roadmap","The codebase","The user experience","The budget"], a:2, why:"PM owns why/what, engineering owns how, design owns the experience."},
+    {q:"Good design critique feedback sounds like:", opts:["'I don't like the blue'","'What's the primary action here? The two buttons compete for it'","'Make it pop'","'Ship it'"], a:1, why:"Tie observations to intent and user goals, not personal taste."},
+    {q:"In a whiteboard challenge, the FIRST thing to do is:", opts:["Draw the final screen","Ask clarifying questions and state assumptions","Pick a color palette","Name the app"], a:1, why:"They're grading your process; diving into pixels is the classic fail."},
+    {q:"Design QA means:", opts:["Testing code performance","Checking the built product against the design before release","Interviewing users","Filing legal paperwork"], a:1, why:"It's the step that keeps good designs from shipping broken."}
+  ]
+}
+];
+
+/* =====================================================
+   GLOSSARY
+===================================================== */
+const GLOSSARY = [
+["Accessibility (a11y)","Designing so people with visual, motor, auditory, or cognitive differences can use the product. Legally required in many contexts; ethically required in all."],
+["Affordance","A visual cue that tells you how something works — a raised button 'affords' pressing."],
+["Breakpoint","A screen width where a responsive layout changes (e.g., sidebar collapses at 900px — resize this window to see one)."],
+["Card","A contained surface grouping related content, like the panels on this page."],
+["CTA (Call To Action)","The primary action you want a user to take — usually the loudest button on the screen."],
+["Design system","A shared library of colors, type, spacing, and components that keeps a product consistent."],
+["Empty state","What a screen shows when there's no data yet. Good ones explain what to do next."],
+["Fitts's Law","Bigger + closer targets are faster to hit. Governs button size and placement."],
+["Gestalt principles","Psychology of how we group visuals: proximity, similarity, closure, continuity."],
+["Grid","Invisible columns and rows that align a layout. 12 columns is the desktop standard."],
+["Heuristic evaluation","Reviewing an interface against a checklist of known usability principles (Nielsen's 10 are the classic set)."],
+["Hick's Law","More choices = slower decisions. Argues for short menus and progressive disclosure."],
+["Hierarchy","The intentional ordering of what gets noticed first, second, third."],
+["HSL","Hue / Saturation / Lightness — a human-friendly way to describe and modify color."],
+["Information architecture (IA)","How content is organized, labeled, and structured so people can find things."],
+["Jakob's Law","Users expect your product to work like the products they already know."],
+["Kerning / letter-spacing","The space between letters. Wide spacing suits small caps labels; tight suits big headlines."],
+["Mockup","A high-fidelity static picture of the final design — real colors, type, and content."],
+["Persona","A research-based sketch of a typical user: goals, context, frustrations."],
+["Progressive disclosure","Showing only essential options first, revealing complexity on demand."],
+["Prototype","A clickable simulation of a design used for testing before any code is written."],
+["Semantic colors","Colors with learned meanings: green success, amber warning, red danger."],
+["Type scale","A set of font sizes generated from a ratio so they relate harmoniously."],
+["Usability testing","Watching real people attempt tasks with your design, without helping them."],
+["User flow","The step-by-step path a user takes to complete a goal, e.g., search → select → pay."],
+["WCAG","Web Content Accessibility Guidelines — the standard defining contrast ratios and other accessibility rules."],
+["Whitespace","Empty space used deliberately to group, separate, and emphasize."],
+["Wireframe","A low-fidelity structural blueprint of a screen — gray boxes over aesthetics."],
+["A/B test","Showing two versions to different user groups and measuring which performs better. Behavioral + quantitative."],
+["Affinity mapping","Clustering raw research observations into named themes — usually with sticky notes in FigJam or Miro."],
+["ARIA","Accessible Rich Internet Applications — HTML attributes adding semantics for assistive tech. Rule one: prefer native elements."],
+["Atomic design","Brad Frost's model: atoms → molecules → organisms → templates → pages."],
+["Auto Layout","Figma's responsive container system: direction, gap, padding, and hug/fill/fixed sizing. Flexbox thinking for designers."],
+["Card sorting","Users group content into piles that make sense to them — open (they name groups) or closed (you provide them)."],
+["Component / instance","A master element and its live-linked copies. Edit the master, every instance updates."],
+["Constraints (Figma)","Rules pinning elements to frame edges so layouts survive resizing."],
+["Design QA","Checking the built product against the design before release."],
+["Design system","Tokens + components + patterns + documentation: the single source of truth for a product's design."],
+["Design token","A named design decision like color/action/primary. Semantic tokens point at primitive values, making theming cheap."],
+["DesignOps","The discipline of tooling, process, and rituals that lets design teams scale."],
+["Dev Mode","Figma's engineer handoff view: exact measurements, tokens, and code snippets from any layer."],
+["Easing","The acceleration curve of an animation. Ease-out for entrances, ease-in for exits — never linear for UI."],
+["FigJam","Figma's whiteboard product for workshops, flows, and affinity mapping. Miro is the main alternative."],
+["First-click test","Show a screen, give a task, record only the first click — a strong predictor of task success."],
+["Heatmap","A visualization of where users click, tap, or look. Hotjar is the classic tool."],
+["HIG","Apple's Human Interface Guidelines — the iOS/macOS platform rulebook. Android's counterpart is Material Design."],
+["JTBD (Jobs-to-be-done)","Framing products as things users 'hire' to make progress — motivation over demographics."],
+["Journey map","A visualization of a user's steps, thoughts, and emotions across an experience, exposing pain points."],
+["Material Design","Google's design system and platform conventions for Android and the web."],
+["Microinteraction","A tiny complete interactive moment: trigger → rules → feedback → loops."],
+["Mobile-first","Designing the narrow, constrained version first, then letting layouts earn complexity with space."],
+["POUR","WCAG's four pillars: Perceivable, Operable, Understandable, Robust."],
+["Skip link","A hidden-until-focused link letting keyboard users jump past navigation to content."],
+["Smart Animate","Figma's transition that matches layers by name across frames and tweens between them."],
+["Storybook","Where engineering teams build and document the coded versions of design-system components."],
+["Thumb zone","The bottom-of-screen region a thumb reaches comfortably — where mobile primary actions belong."],
+["Tree testing","Testing findability in a bare menu structure, with all visual design stripped away."],
+["Variant","One component in multiple switchable states or styles: primary/secondary, hover/disabled, S/M/L."]
+];
+
+/* =====================================================
+   CHALLENGES (critique training)
+===================================================== */
+const CHALLENGES = [
+{
+  id:"c1", title:"The shouting landing page", intro:"A startup's hero section. Three of these six critiques are legitimate problems. Find them.",
+  mock:`<div style="background:#fff;padding:28px;font-family:Arial,Helvetica,sans-serif">
+    <div style="background:#ff2d2d;color:#ffe95c;padding:26px;text-align:center">
+      <div style="font-size:30px;font-weight:bold;text-transform:uppercase;letter-spacing:1px">Revolutionize your workflow synergy today!!!</div>
+      <div style="font-size:26px;font-weight:bold;margin-top:8px;color:#fff">The best tool ever made for teams</div>
+      <div style="margin-top:16px">
+        <button style="background:#ffe95c;color:#a8a12f;border:none;padding:8px 14px;font-size:12px;font-weight:bold">START FREE TRIAL</button>
+        <button style="background:#ff8b8b;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:bold">BOOK A DEMO</button>
+        <button style="background:#ffb35c;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:bold">WATCH VIDEO</button>
+        <button style="background:#8bff9e;color:#fff;border:none;padding:8px 14px;font-size:12px;font-weight:bold">READ DOCS</button>
+      </div>
+    </div>
+  </div>`,
+  opts:[
+    {t:"Yellow text on bright red fails contrast and strains the eyes.", ok:true, why:"Vibrating, low-contrast pairing — a genuine readability failure."},
+    {t:"The headline and subheadline are nearly the same size, so there's no clear hierarchy.", ok:true, why:"30px vs 26px bold — the squint test shows two competing headlines."},
+    {t:"Four equally-loud CTAs compete; no primary action exists.", ok:true, why:"Hick's Law + hierarchy: one primary CTA, the rest quiet."},
+    {t:"The page uses a sans-serif font, which is wrong for the web.", ok:false, why:"Sans-serifs are the web's workhorse — this is not a problem."},
+    {t:"Buttons should never be placed side by side.", ok:false, why:"Side-by-side buttons are fine; the problem is equal emphasis, not adjacency."},
+    {t:"Centered text is always a usability violation.", ok:false, why:"Centering is a legitimate choice for short hero copy."}
+  ]
+},
+{
+  id:"c2", title:"The impossible form", intro:"A sign-up form that users keep abandoning. Pick the three real culprits.",
+  mock:`<div style="background:#fff;padding:28px;font-family:Arial,Helvetica,sans-serif;color:#222">
+    <div style="max-width:420px;margin:0 auto">
+      <div style="font-size:18px;font-weight:bold;margin-bottom:14px">Create account</div>
+      <div style="color:#c7c7c7;font-size:11px;margin-bottom:2px">EMAIL</div>
+      <input style="width:100%;border:1px solid #eee;padding:6px;font-size:13px" placeholder="Email">
+      <div style="color:#c7c7c7;font-size:11px;margin:10px 0 2px">PASSWORD (must contain 14+ chars, 2 symbols, 1 emoji)</div>
+      <input style="width:100%;border:1px solid #eee;padding:6px;font-size:13px" placeholder="Password">
+      <div style="color:#c7c7c7;font-size:11px;margin:10px 0 2px">FAX NUMBER *required</div>
+      <input style="width:100%;border:1px solid #eee;padding:6px;font-size:13px" placeholder="Fax">
+      <div style="margin-top:16px;text-align:right">
+        <button style="background:#eee;color:#bbb;border:none;padding:10px 22px;font-weight:bold">Sign up</button>
+      </div>
+      <div style="color:#ff4d4d;font-size:10px;margin-top:6px">Error</div>
+    </div>
+  </div>`,
+  opts:[
+    {t:"Labels are light gray on white — very low contrast and hard to read.", ok:true, why:"#c7c7c7 on white is far below the 4.5:1 minimum."},
+    {t:"The form demands irrelevant information (a required fax number).", ok:true, why:"Every unnecessary field costs completions. Ask only for what you need."},
+    {t:"The error message just says 'Error' — no explanation, no fix, barely visible.", ok:true, why:"Errors must say what went wrong and how to fix it, near the field."},
+    {t:"The form is vertically stacked instead of side by side.", ok:false, why:"Single-column forms actually test better."},
+    {t:"'Create account' should be in all caps to feel official.", ok:false, why:"Caps would slow reading and add nothing."},
+    {t:"The Sign up button is on the right, which is forbidden.", ok:false, why:"Right-aligned primary actions are a common, accepted convention."}
+  ]
+},
+{
+  id:"c3", title:"The mystery meat app", intro:"A mobile music screen. Three genuine UX failures are hiding here.",
+  mock:`<div style="background:#111;padding:28px;font-family:Arial,Helvetica,sans-serif">
+    <div style="max-width:300px;margin:0 auto;background:#1d1d1d;border-radius:14px;padding:18px;color:#eee">
+      <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+        <span style="font-size:12px">◈</span><span style="font-size:12px">▤</span><span style="font-size:12px">⬡</span><span style="font-size:12px">✦</span>
+      </div>
+      <div style="height:110px;background:#333;border-radius:8px;margin-bottom:12px"></div>
+      <div style="font-size:14px;font-weight:bold">Midnight Static</div>
+      <div style="font-size:11px;color:#2e2e2e">The Vermilion Set — Night Drives EP</div>
+      <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;align-items:center">
+        <button style="background:none;border:none;color:#eee;font-size:11px">a</button>
+        <button style="background:none;border:none;color:#eee;font-size:11px;width:14px;height:14px">b</button>
+        <button style="background:none;border:none;color:#eee;font-size:11px">c</button>
+      </div>
+    </div>
+  </div>`,
+  opts:[
+    {t:"Navigation icons are unlabeled abstract symbols — 'mystery meat' the user must guess.", ok:true, why:"Icons without labels or convention force trial-and-error."},
+    {t:"The artist/album line is dark gray on dark gray — effectively invisible.", ok:true, why:"#2e2e2e on #1d1d1d is a severe contrast failure."},
+    {t:"The playback buttons are ~14px — far below the ~44px minimum touch target.", ok:true, why:"Fitts's Law on mobile: fingers need big targets."},
+    {t:"Dark mode itself is a usability problem.", ok:false, why:"Dark themes are fine when contrast is handled — this page is proof."},
+    {t:"Album art should never be square.", ok:false, why:"Square album art is the universal convention."},
+    {t:"There are too few buttons on the screen.", ok:false, why:"Fewer, clearer controls is usually a strength."}
+  ]
+},
+{
+  id:"c4", title:"The accessibility audit", intro:"A project dashboard that fails real users. Three of these six critiques are genuine WCAG/accessibility failures.",
+  mock:`<div style="background:#fff;padding:28px;font-family:Arial,Helvetica,sans-serif;color:#222">
+    <div style="max-width:460px;margin:0 auto">
+      <div style="font-size:17px;font-weight:bold;margin-bottom:12px">Deploy status</div>
+      <div style="display:flex;gap:18px;margin-bottom:16px;font-size:13px">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:99px;background:#2ecc71"></span> api-service</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:99px;background:#e74c3c"></span> web-client</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:99px;background:#e74c3c"></span> worker</span>
+      </div>
+      <div style="font-size:12px;color:#d8d8d8;margin-bottom:14px">Last checked 2 minutes ago · auto-refresh enabled · logs retained 30 days</div>
+      <div style="border:1px solid #eee;border-radius:8px;padding:12px;font-size:13px;margin-bottom:14px">
+        <img src="" alt="" style="width:38px;height:38px;background:#ddd;border-radius:6px;float:left;margin-right:10px">
+        Chart showing error rates spiking at 14:00 (image, no description provided)
+      </div>
+      <div style="display:flex;gap:8px">
+        <div style="background:#4a6cf7;color:#fff;border-radius:7px;padding:9px 16px;font-weight:bold;font-size:13px;cursor:pointer">Restart services</div>
+        <div style="color:#4a6cf7;padding:9px 8px;font-size:13px;cursor:pointer">View logs</div>
+      </div>
+    </div>
+  </div>`,
+  opts:[
+    {t:"Service health is communicated by colored dots alone — colorblind users can't tell green from red here.", ok:true, why:"Color-only status is a classic Perceivable failure. Pair dots with labels or icons."},
+    {t:"The metadata line is #d8d8d8 on white — far below minimum contrast.", ok:true, why:"Near-invisible gray text fails the 4.5:1 requirement badly."},
+    {t:"The 'buttons' are clickable divs and the chart image has empty alt text — invisible to keyboards and screen readers.", ok:true, why:"Divs aren't focusable or announced; meaningful images need real alt text. This is the Robust pillar failing."},
+    {t:"Dashboards should never auto-refresh.", ok:false, why:"Auto-refresh is fine — done politely, it's good UX for monitoring."},
+    {t:"Status indicators are not allowed to use red and green at all.", ok:false, why:"Red/green is fine as long as color isn't the ONLY signal."},
+    {t:"The primary button uses blue, which fails accessibility.", ok:false, why:"There's no rule against blue — the contrast of that pairing actually passes."}
+  ]
+},
+{
+  id:"c5", title:"The overloaded mobile app", intro:"A mobile home screen fighting its users. Find the three real ergonomic and platform failures.",
+  mock:`<div style="background:#f2f2f4;padding:28px;font-family:Arial,Helvetica,sans-serif">
+    <div style="max-width:280px;margin:0 auto;background:#fff;border-radius:18px;padding:14px;color:#222;box-shadow:0 6px 20px rgba(0,0,0,.12)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-weight:bold;font-size:14px">HomeHub</span>
+        <span style="font-size:9px;color:#888">tap and hold anywhere for options</span>
+      </div>
+      <div style="height:84px;background:#e8e8ec;border-radius:10px;margin-bottom:10px;display:grid;place-items:center;font-size:11px;color:#999">promo banner</div>
+      <div style="font-size:12px;margin-bottom:12px">Welcome back! You have 3 tasks due.</div>
+      <div style="display:flex;justify-content:space-between;border-top:1px solid #eee;padding-top:10px">
+        <span style="font-size:8px;text-align:center;width:12%">⌂<br>Home</span>
+        <span style="font-size:8px;text-align:center;width:12%">✓<br>Tasks</span>
+        <span style="font-size:8px;text-align:center;width:12%">◔<br>Stats</span>
+        <span style="font-size:8px;text-align:center;width:12%">✉<br>Inbox</span>
+        <span style="font-size:8px;text-align:center;width:12%">♡<br>Saved</span>
+        <span style="font-size:8px;text-align:center;width:12%">☺<br>Social</span>
+        <span style="font-size:8px;text-align:center;width:12%">⚙<br>More</span>
+      </div>
+    </div>
+  </div>`,
+  opts:[
+    {t:"Seven bottom tabs crammed together — each target is far below the ~44px minimum and there are too many top-level destinations.", ok:true, why:"Fitts + Hick on mobile: 3–5 comfortable tabs is the platform norm."},
+    {t:"A core interaction ('tap and hold anywhere') is an invisible gesture explained only by a 9px hint.", ok:true, why:"Gestures without visible affordance are mystery meat — and the hint itself is unreadable."},
+    {t:"The promo banner takes the most valuable screen position while the user's actual tasks get one small line.", ok:true, why:"Hierarchy should serve the user's goal (3 tasks due), not the business's banner."},
+    {t:"Mobile apps should never use bottom navigation.", ok:false, why:"Bottom nav is the platform standard — it lives in the thumb zone. The problem is seven of them."},
+    {t:"Rounded corners on the card make it look unprofessional.", ok:false, why:"Radius is a neutral style choice, not a usability issue."},
+    {t:"The app should not greet the user by saying 'Welcome back'.", ok:false, why:"Friendly copy is fine; it's not competing with anything important."}
+  ]
+}
+];
+
+/* =====================================================
+   NAV & ROUTER
+===================================================== */
+const NAV = [
+  {label:"Studio", items:[
+    {id:"home", name:"Home", icon:"⌂"}
+  ]},
+  {label:"Curriculum", items: MODULES.map(m=>({id:m.id, name:m.title, nnum:m.num}))},
+  {label:"Hands-on", items:[
+    {id:"labs", name:"Labs"},
+    {id:"challenges", name:"Challenges"},
+    {id:"playground", name:"Playground"}
+  ]},
+  {label:"Reference", items:[
+    {id:"tools", name:"Tool Atlas"},
+    {id:"glossary", name:"Glossary"},
+    {id:"progress", name:"My Progress"}
+  ]}
+];
+let currentView = "home";
+
+function moduleDone(m){
+  return m.lessons.every(l=>S.lessons.includes(l.id)) && S.quizzes[m.id]!==undefined;
+}
+
+function renderNav(){
+  const nav=document.getElementById("sidenav");
+  nav.innerHTML = NAV.map(sec=>
+    `<div class="navlabel">${sec.label}</div>`+
+    sec.items.map(it=>{
+      const mod = MODULES.find(m=>m.id===it.id);
+      const done = mod ? moduleDone(mod) : false;
+      return `<button class="navitem ${currentView===it.id?'active':''} ${done?'done':''}" data-nav="${it.id}">
+        ${it.nnum?`<span class="nnum">${it.nnum}</span>`:`<span class="dot"></span>`}
+        ${it.name}${done?' ✓':''}
+      </button>`;
+    }).join("")
+  ).join("");
+}
+document.getElementById("sidenav").addEventListener("click",e=>{
+  const b=e.target.closest("[data-nav]");
+  if(b) go(b.dataset.nav);
+});
+function go(view){
+  currentView=view;
+  renderNav();
+  const main=document.getElementById("main");
+  main.scrollTop=0;
+  if(view==="home") return renderHome();
+  if(view==="labs") return renderLabs();
+  if(view==="challenges") return renderChallenges();
+  if(view==="playground") return renderPlayground();
+  if(view==="tools") return renderTools();
+  if(view==="glossary") return renderGlossary();
+  if(view==="progress") return renderProgress();
+  const mod=MODULES.find(m=>m.id===view);
+  if(mod) return renderModule(mod);
+  renderHome();
+}
+
+/* =====================================================
+   VIEWS
+===================================================== */
+function el(html){ const d=document.createElement("div"); d.className="view"; d.innerHTML=html; return d; }
+function mount(node){ const m=document.getElementById("main"); m.innerHTML=""; m.appendChild(node); }
+
+/* ---- HOME ---- */
+function renderHome(){
+  const lessonsDone=S.lessons.length;
+  const totalLessons=MODULES.reduce((n,m)=>n+m.lessons.length,0);
+  const v=el(`
+    <div class="hero">
+      <div class="eyebrow">Interactive UI·UX Studio</div>
+      <h1>Learn design by <em>using</em> a designed thing.</h1>
+      <p class="lede">Atelier/UX is a self-contained studio for absolute beginners — no code, no jargon walls. Thirteen modules take you from first principles through Figma, design systems, research methods, accessibility, and getting hired. Prove each idea in the labs, critique broken interfaces, and build your own screens. The platform itself is your first case study: hit <strong>◉ X-Ray</strong> in the top bar and it will annotate its own design decisions.</p>
+    </div>
+    <div class="statrow" data-xr="stats · scannable chunks (Miller's 7±2)">
+      <div class="stat"><b>${lessonsDone}/${totalLessons}</b><span>lessons complete</span></div>
+      <div class="stat"><b>${S.labs.length}/${LABS.length}</b><span>labs explored</span></div>
+      <div class="stat"><b>${S.challenges.length}/${CHALLENGES.length}</b><span>challenges solved</span></div>
+      <div class="stat"><b>${S.badges.length}</b><span>badges earned</span></div>
+    </div>
+    <h2>The path</h2>
+    <div class="grid2" id="pathgrid"></div>
+    <h2>How to use this studio</h2>
+    <div class="grid3">
+      <div class="card"><h3 style="margin-top:0">1 · Read</h3><p style="font-size:13.5px;margin:0">Work through the thirteen modules in order — fundamentals first, then tools, systems, and the industry itself. Each lesson is a few minutes; mark it complete to bank XP.</p></div>
+      <div class="card"><h3 style="margin-top:0">2 · Feel</h3><p style="font-size:13.5px;margin:0">Every abstract idea has a lab. Drag the sliders, play the games — the laws stick when your own reaction time proves them.</p></div>
+      <div class="card"><h3 style="margin-top:0">3 · Judge & build</h3><p style="font-size:13.5px;margin:0">Critique broken UIs in Challenges, then compose your own screens in the Playground.</p></div>
+    </div>
+    <div class="callout" style="margin-top:26px"><div class="cl-t">Your progress is saved</div><p>Progress is stored in this browser (localStorage). Host this file anywhere — GitHub Pages included — and it keeps working, no server needed.</p></div>
+  `);
+  const pg=v.querySelector("#pathgrid");
+  MODULES.forEach(m=>{
+    const done=moduleDone(m);
+    const dl=m.lessons.filter(l=>S.lessons.includes(l.id)).length;
+    const b=document.createElement("button");
+    b.className="card pathcard";
+    b.innerHTML=`<span class="pnum">${m.num}</span>
+      <span style="flex:1">
+        <h3>${m.title}</h3><p>${m.blurb}</p>
+        <span class="pmeta"><span class="tag ${done?'hot':''}">${done?'✓ complete':dl+'/'+m.lessons.length+' lessons'}</span><span class="tag">quiz ${S.quizzes[m.id]!==undefined?S.quizzes[m.id]+'/'+m.quiz.length:'—'}</span></span>
+      </span>`;
+    b.addEventListener("click",()=>go(m.id));
+    pg.appendChild(b);
+  });
+  mount(v);
+}
+
+/* ---- MODULE ---- */
+function renderModule(mod){
+  const idx=MODULES.indexOf(mod);
+  const v=el(`
+    <div class="eyebrow">Module ${mod.num} of ${String(MODULES.length).padStart(2,"0")}</div>
+    <h1>${mod.title}</h1>
+    <p class="lede">${mod.blurb}</p>
+    <div id="lessonlist" style="margin-top:26px"></div>
+    <h2>Module ${mod.num} quiz</h2>
+    <p style="color:var(--muted);font-size:14px">${mod.quiz.length} questions · 10 XP each on your first attempt. You can retake, but XP is banked once.</p>
+    <div class="card quiz" id="quizbox"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:30px">
+      ${idx>0?`<button class="btn ghost" id="prevmod">← ${MODULES[idx-1].title}</button>`:`<span></span>`}
+      ${idx<MODULES.length-1?`<button class="btn ghost" id="nextmod">${MODULES[idx+1].title} →</button>`:`<button class="btn" id="nextmod2">Go practice → Labs</button>`}
+    </div>
+  `);
+  const list=v.querySelector("#lessonlist");
+  mod.lessons.forEach((l,i)=>{
+    const done=S.lessons.includes(l.id);
+    const d=document.createElement("div");
+    d.className="lesson";
+    d.setAttribute("data-xr","lesson card · 24px internal padding (8px scale)");
+    d.innerHTML=`<div class="lnum">LESSON ${mod.num}.${i+1}</div><h3>${l.t}</h3>${l.html}
+      <div class="completerow">
+        <span class="tag">~3 min read</span>
+        ${done?`<span class="donebadge">✓ completed</span>`:`<button class="btn sm" data-complete="${l.id}">Mark complete · +20 XP</button>`}
+      </div>`;
+    list.appendChild(d);
+  });
+  list.addEventListener("click",e=>{
+    const b=e.target.closest("[data-complete]");
+    if(!b) return;
+    const id=b.dataset.complete;
+    if(!S.lessons.includes(id)){
+      S.lessons.push(id);
+      addXP(20,"lesson complete");
+      if(S.lessons.length===1) award("First Steps");
+      if(MODULES.every(m=>m.lessons.every(x=>S.lessons.includes(x.id)))) award("Scholar");
+      const m7=MODULES.find(m=>m.id==="m7");
+      if(m7.lessons.every(x=>S.lessons.includes(x.id))) award("Toolsmith");
+      const m12=MODULES.find(m=>m.id==="m12");
+      if(m12.lessons.every(x=>S.lessons.includes(x.id))) award("Advocate");
+      renderModule(mod);
+    }
+  });
+  renderQuiz(v.querySelector("#quizbox"), mod);
+  const pm=v.querySelector("#prevmod"); if(pm) pm.addEventListener("click",()=>go(MODULES[idx-1].id));
+  const nm=v.querySelector("#nextmod"); if(nm) nm.addEventListener("click",()=>go(MODULES[idx+1].id));
+  const nm2=v.querySelector("#nextmod2"); if(nm2) nm2.addEventListener("click",()=>go("labs"));
+  mount(v);
+}
+
+function renderQuiz(box, mod){
+  const prev=S.quizzes[mod.id];
+  box.innerHTML = mod.quiz.map((q,qi)=>`
+    <div class="q" data-q="${qi}">
+      <div class="qt">${qi+1}. ${q.q}</div>
+      ${q.opts.map((o,oi)=>`<label class="opt"><input type="radio" name="q${mod.id}${qi}" value="${oi}"><span>${o}</span></label>`).join("")}
+      <div class="qwhy" style="display:none;font-size:13px;color:var(--muted);padding:6px 2px 0"></div>
+    </div>`).join("") +
+    `<button class="btn" id="qsubmit">Check answers</button>
+     ${prev!==undefined?`<span style="margin-left:14px;font-family:var(--mono);font-size:13px;color:var(--muted)">best: ${prev}/${mod.quiz.length}</span>`:""}
+     <div class="quizresult" id="qresult"></div>`;
+  box.querySelector("#qsubmit").addEventListener("click",()=>{
+    let score=0, answered=0;
+    mod.quiz.forEach((q,qi)=>{
+      const qEl=box.querySelector(`[data-q="${qi}"]`);
+      const sel=qEl.querySelector("input:checked");
+      const opts=qEl.querySelectorAll(".opt");
+      opts.forEach(o=>o.classList.remove("correct","wrong"));
+      const why=qEl.querySelector(".qwhy");
+      if(sel){
+        answered++;
+        const val=+sel.value;
+        if(val===q.a){score++; opts[val].classList.add("correct");}
+        else{opts[val].classList.add("wrong"); opts[q.a].classList.add("correct");}
+        why.style.display="block";
+        why.textContent="→ "+q.why;
+      }
+    });
+    if(answered<mod.quiz.length){ toast("Answer all "+mod.quiz.length+" questions first"); return; }
+    const res=box.querySelector("#qresult");
+    res.textContent = score+"/"+mod.quiz.length+(score===mod.quiz.length?" — flawless.":score>=mod.quiz.length-1?" — strong.":" — review and retake anytime.");
+    const first = S.quizzes[mod.id]===undefined;
+    if(first){
+      S.quizzes[mod.id]=score;
+      addXP(score*10,"quiz banked");
+    } else if(score>S.quizzes[mod.id]){
+      S.quizzes[mod.id]=score; saveState();
+    }
+    if(score/mod.quiz.length>=0.8) award("Quiz Whiz");
+    renderNav();
+  });
+}
+
+/* =====================================================
+   LABS
+===================================================== */
+const LABS = [
+  {id:"contrast", icon:"◐", name:"Contrast Lab", desc:"Pick two colors, get a live WCAG ratio and pass/fail verdicts."},
+  {id:"typescale", icon:"Aa", name:"Type Scale Lab", desc:"Drag a ratio and watch a whole typographic hierarchy generate itself."},
+  {id:"spacing", icon:"⿴", name:"Spacing Lab", desc:"One slider, one card — feel cramped become comfortable."},
+  {id:"fitts", icon:"◎", name:"Fitts's Law Range", desc:"Hit 12 targets against the clock and see the law in your own reaction times."},
+  {id:"hick", icon:"⌥", name:"Hick's Law Timer", desc:"Find the right button among 4, 9, then 16 — and watch your decision time grow."},
+  {id:"palette", icon:"❖", name:"Palette Lab", desc:"Spin HSL dials, generate a five-swatch palette, repaint a mock app live."},
+  {id:"autolayout", icon:"⊞", name:"Auto Layout Sandbox", desc:"Figma's four dials — direction, gap, padding, sizing — as a live simulator."},
+  {id:"states", icon:"◫", name:"Component States Lab", desc:"One button, eight states. Toggle through the full anatomy pros design."},
+  {id:"breakpoint", icon:"⇔", name:"Breakpoint Lab", desc:"Drag a viewport from phone to desktop and watch a page restructure itself."},
+  {id:"easing", icon:"∿", name:"Motion & Easing Lab", desc:"Race four easing curves, tune duration, and feel why nothing should move linearly."},
+  {id:"shortcuts", icon:"⌘", name:"Figma Shortcut Trainer", desc:"Flashcard drills for the shortcuts working designers use hundreds of times a day."}
+];
+function labVisit(id){
+  if(!S.labs.includes(id)){
+    S.labs.push(id);
+    addXP(15,"new lab explored");
+    if(S.labs.length===LABS.length) award("Lab Rat");
+  }
+}
+function renderLabs(openLab){
+  const v=el(`
+    <div class="eyebrow">Hands-on</div>
+    <h1>Labs</h1>
+    <p class="lede">Theory you can poke. Each lab is a live instrument — first visit earns 15 XP, and everything updates in real time.</p>
+    <div class="labgrid" id="labgrid" style="margin-top:24px"></div>
+    <div id="labslot"></div>
+  `);
+  const grid=v.querySelector("#labgrid");
+  LABS.forEach(l=>{
+    const b=document.createElement("button");
+    b.className="card labcard"+(openLab===l.id?" sel":"");
+    b.innerHTML=`<div class="licon" style="font-family:var(--display);color:var(--vermilion)">${l.icon}</div><h3>${l.name}${S.labs.includes(l.id)?' <span style="color:var(--ok);font-size:12px">✓</span>':''}</h3><p>${l.desc}</p>`;
+    b.addEventListener("click",()=>{ renderLabs(l.id); });
+    grid.appendChild(b);
+  });
+  mount(v);
+  if(openLab){
+    labVisit(openLab);
+    const slot=v.querySelector("#labslot");
+    ({contrast:labContrast, typescale:labTypescale, spacing:labSpacing, fitts:labFitts, hick:labHick, palette:labPalette, autolayout:labAutolayout, states:labStates, breakpoint:labBreakpoint, easing:labEasing, shortcuts:labShortcuts})[openLab](slot);
+    if(slot.scrollIntoView) slot.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+}
+
+/* --- contrast math --- */
+function hexToRgb(h){ h=h.replace("#",""); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function lum(rgb){
+  const a=rgb.map(v=>{v/=255; return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4);});
+  return 0.2126*a[0]+0.7152*a[1]+0.0722*a[2];
+}
+function ratio(h1,h2){
+  const l1=lum(hexToRgb(h1)), l2=lum(hexToRgb(h2));
+  const hi=Math.max(l1,l2), lo=Math.min(l1,l2);
+  return (hi+0.05)/(lo+0.05);
+}
+function labContrast(slot){
+  slot.innerHTML=`<div class="labpanel" data-xr="lab panel · live feedback loop">
+    <h2 style="margin-top:0">Contrast Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">WCAG needs <strong style="color:var(--text)">4.5:1</strong> for body text, <strong style="color:var(--text)">3:1</strong> for large text, <strong style="color:var(--text)">7:1</strong> for AAA. Start by finding this platform's own pairs: try <code>#f3f2f2</code> on <code>#1c1a1a</code>.</p>
+    <div class="ctlrow">
+      <label class="ctl">text color<input type="color" id="cText" value="#f3f2f2"></label>
+      <label class="ctl">background<input type="color" id="cBg" value="#1c1a1a"></label>
+      <div style="margin-left:auto;text-align:right">
+        <div class="bigratio" id="cRatio">—</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--muted)">contrast ratio</div>
+      </div>
+    </div>
+    <div class="passrow" id="cPass"></div>
+    <div class="contrast-preview" id="cPrev">
+      <div style="font-family:var(--display);font-size:24px;font-weight:700;margin-bottom:6px">Large heading text (24px)</div>
+      <div style="font-size:15px">Normal body text at 15px. If you can read this comfortably at arm's length, and the ratio above passes, you're in good shape. Now try a fashionable light gray like #b9b9b9 on white and watch it fail.</div>
+    </div></div>`;
+  const upd=()=>{
+    const t=slot.querySelector("#cText").value, b=slot.querySelector("#cBg").value;
+    const r=ratio(t,b);
+    slot.querySelector("#cRatio").textContent=r.toFixed(2)+":1";
+    slot.querySelector("#cRatio").style.color = r>=4.5?"var(--ok)":r>=3?"var(--warn)":"var(--vermilion)";
+    slot.querySelector("#cPass").innerHTML=
+      `<span class="pf ${r>=4.5?'pass':'fail'}">AA body ≥4.5 ${r>=4.5?'✓':'✗'}</span>
+       <span class="pf ${r>=3?'pass':'fail'}">AA large ≥3.0 ${r>=3?'✓':'✗'}</span>
+       <span class="pf ${r>=7?'pass':'fail'}">AAA ≥7.0 ${r>=7?'✓':'✗'}</span>`;
+    const p=slot.querySelector("#cPrev"); p.style.background=b; p.style.color=t;
+  };
+  slot.querySelector("#cText").addEventListener("input",upd);
+  slot.querySelector("#cBg").addEventListener("input",upd);
+  upd();
+}
+
+function labTypescale(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Type Scale Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">Every size below is generated from two numbers: a base and a ratio. Change either and the whole hierarchy re-derives itself — this is exactly how design systems define type.</p>
+    <div class="ctlrow">
+      <label class="ctl">base size <span id="tsBaseV">16px</span><input type="range" id="tsBase" min="13" max="20" value="16"></label>
+      <label class="ctl">ratio
+        <select id="tsRatio">
+          <option value="1.125">1.125 — major second (dense UI)</option>
+          <option value="1.2" selected>1.200 — minor third (balanced)</option>
+          <option value="1.25">1.250 — major third</option>
+          <option value="1.333">1.333 — perfect fourth (editorial)</option>
+          <option value="1.5">1.500 — perfect fifth (bold)</option>
+          <option value="1.618">1.618 — golden ratio (poster)</option>
+        </select>
+      </label>
+    </div>
+    <div class="typescale-out" id="tsOut"></div></div>`;
+  const names=["Caption","Body","Heading 3","Heading 2","Heading 1","Display"];
+  const upd=()=>{
+    const base=+slot.querySelector("#tsBase").value;
+    const r=+slot.querySelector("#tsRatio").value;
+    slot.querySelector("#tsBaseV").textContent=base+"px";
+    let html="";
+    for(let i=0;i<6;i++){
+      const size = base*Math.pow(r,i-1);
+      html+=`<div><span class="sz">${size.toFixed(1)}px</span><span style="font-family:${i>=2?'var(--display)':'var(--body)'};font-size:${Math.min(size,64)}px;font-weight:${i>=2?700:400};line-height:1.2">${names[i]} — quietly confident</span></div>`;
+    }
+    slot.querySelector("#tsOut").innerHTML=html;
+  };
+  slot.querySelector("#tsBase").addEventListener("input",upd);
+  slot.querySelector("#tsRatio").addEventListener("change",upd);
+  upd();
+}
+
+function labSpacing(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Spacing Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">Same card, same content, one variable: the spacing unit. Drag from cramped to airy and notice the exact point where it starts feeling "professional" — most people land between 12 and 20.</p>
+    <div class="ctlrow"><label class="ctl">spacing unit <span id="spV">16px</span><input type="range" id="spU" min="2" max="34" value="16"></label></div>
+    <div class="spacing-demo-card" id="spCard">
+      <h4 id="spH">Weekly design digest</h4>
+      <p id="spP1">Five interfaces worth studying, one classic paper, and a teardown of a checkout flow that quietly doubled conversions.</p>
+      <p id="spP2">Delivered Thursdays. Unsubscribe anytime.</p>
+      <button class="sbtn" id="spB">Subscribe free</button>
+    </div></div>`;
+  const upd=()=>{
+    const u=+slot.querySelector("#spU").value;
+    slot.querySelector("#spV").textContent=u+"px";
+    const c=slot.querySelector("#spCard");
+    c.style.padding=(u*1.5)+"px";
+    slot.querySelector("#spH").style.marginBottom=(u*0.6)+"px";
+    slot.querySelector("#spP1").style.marginBottom=(u*0.6)+"px";
+    slot.querySelector("#spP2").style.marginBottom=u+"px";
+  };
+  slot.querySelector("#spU").addEventListener("input",upd);
+  upd();
+}
+
+function labFitts(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Fitts's Law Range</h2>
+    <p style="font-size:14px;color:var(--muted)">Hit 12 targets as fast as you can. Sizes and positions are random. Afterwards we compare your average time on <strong style="color:var(--text)">small</strong> vs <strong style="color:var(--text)">large</strong> targets — the law predicts the winner.</p>
+    <button class="btn" id="fStart">Start round</button>
+    <div class="arena" id="fArena"><div class="arenamsg">targets appear here</div></div>
+    <div id="fOut" style="margin-top:14px;font-family:var(--mono);font-size:13.5px"></div></div>`;
+  let times=[], sizes=[], n=0, t0=0;
+  const arena=slot.querySelector("#fArena");
+  function next(){
+    arena.innerHTML="";
+    if(n>=12){ finish(); return; }
+    const size = 22 + Math.round(Math.random()*66);
+    const x = Math.random()*(arena.clientWidth-size-8)+4;
+    const y = Math.random()*(arena.clientHeight-size-8)+4;
+    const b=document.createElement("button");
+    b.className="target";
+    b.style.cssText=`width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+    b.setAttribute("aria-label","target "+(n+1));
+    b.addEventListener("click",()=>{
+      times.push(performance.now()-t0); sizes.push(size);
+      n++; next();
+    });
+    arena.appendChild(b);
+    t0=performance.now();
+  }
+  function finish(){
+    arena.innerHTML=`<div class="arenamsg">round complete — results below</div>`;
+    let sm=[], lg=[];
+    times.forEach((t,i)=>{ (sizes[i]<52?sm:lg).push(t); });
+    const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;
+    const total=Math.round(times.reduce((x,y)=>x+y,0));
+    slot.querySelector("#fOut").innerHTML=
+      `total: <b style="color:var(--peach)">${(total/1000).toFixed(2)}s</b> · `+
+      `small targets (&lt;52px): <b style="color:var(--vermilion)">${avg(sm)}ms avg</b> · `+
+      `large targets: <b style="color:var(--ok)">${avg(lg)}ms avg</b><br>`+
+      `<span style="color:var(--muted)">${avg(sm)>avg(lg)?"Fitts wins again — big targets were faster for you, just as the law predicts. Now you know why primary buttons are big.":"Interesting — you beat the trend this round. Run it again; over more trials the law almost always shows."}</span>`;
+  }
+  slot.querySelector("#fStart").addEventListener("click",()=>{ times=[];sizes=[];n=0; next(); });
+}
+
+function labHick(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Hick's Law Timer</h2>
+    <p style="font-size:14px;color:var(--muted)">Three rounds. Each time, click the button labeled <strong style="color:var(--peach)">TARGET</strong> — first among 4 options, then 9, then 16. Watch your decision time climb with the choice count.</p>
+    <button class="btn" id="hStart">Start</button>
+    <div class="hickgrid" id="hGrid"></div>
+    <div id="hOut" style="margin-top:14px;font-family:var(--mono);font-size:13.5px"></div></div>`;
+  const rounds=[4,9,16]; let ri=0, results=[], t0=0;
+  const grid=slot.querySelector("#hGrid");
+  const decoys=["OPTION","CHOICE","SELECT","ITEM","ENTRY","PICK","THING","FIELD","VALUE","LABEL","INPUT","TOKEN","POINT","BLOCK","UNIT"];
+  function round(){
+    const n=rounds[ri];
+    grid.style.gridTemplateColumns=`repeat(${Math.ceil(Math.sqrt(n))},1fr)`;
+    const tpos=Math.floor(Math.random()*n);
+    grid.innerHTML="";
+    for(let i=0;i<n;i++){
+      const b=document.createElement("button");
+      b.className="hickbtn";
+      b.textContent = i===tpos ? "TARGET" : decoys[(i*7+ri*3)%decoys.length];
+      b.addEventListener("click",()=>{
+        if(i!==tpos){ b.style.borderColor="var(--vermilion)"; return; }
+        results.push({n, ms:Math.round(performance.now()-t0)});
+        ri++;
+        if(ri<rounds.length) round(); else finish();
+      });
+      grid.appendChild(b);
+    }
+    t0=performance.now();
+  }
+  function finish(){
+    grid.innerHTML="";
+    slot.querySelector("#hOut").innerHTML =
+      results.map(r=>`${r.n} options → <b style="color:var(--peach)">${r.ms}ms</b>`).join(" · ")+
+      `<br><span style="color:var(--muted)">More options, more milliseconds. Now multiply that hesitation by every menu, every settings page, every pricing table your users meet — and you understand why editors say "cut, cut, cut."</span>`;
+  }
+  slot.querySelector("#hStart").addEventListener("click",()=>{ ri=0; results=[]; slot.querySelector("#hOut").textContent=""; round(); });
+}
+
+function hsl(h,s,l){ return `hsl(${((h%360)+360)%360} ${s}% ${l}%)`; }
+function labPalette(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Palette Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">One hue dial, one saturation dial, one harmony rule — a full five-color palette derives itself, then repaints the mock player below. This is the mechanical secret behind palettes that "just work."</p>
+    <div class="ctlrow">
+      <label class="ctl">hue <span id="pHv">14°</span><input type="range" id="pH" min="0" max="359" value="14"></label>
+      <label class="ctl">saturation <span id="pSv">85%</span><input type="range" id="pS" min="15" max="100" value="85"></label>
+      <label class="ctl">harmony
+        <select id="pMode">
+          <option value="mono">monochrome (one hue, varied lightness)</option>
+          <option value="analog" selected>analogous (neighboring hues)</option>
+          <option value="comp">complementary (opposite accent)</option>
+        </select>
+      </label>
+    </div>
+    <div class="swatches" id="pSw"></div>
+    <div class="mockplayer" id="pMock">
+      <div class="art" id="pArt"></div>
+      <h4>Night Drives — Side B</h4>
+      <div class="sub">The Vermilion Set · 2026</div>
+      <div class="track" id="pTrack"><i id="pFill"></i></div>
+      <div class="pbtns">
+        <button class="play" id="pPlay" aria-label="play">▶</button>
+        <span style="font-family:var(--mono);font-size:11px;opacity:.75">02:14 / 05:36</span>
+      </div>
+    </div></div>`;
+  const upd=()=>{
+    const h=+slot.querySelector("#pH").value, s=+slot.querySelector("#pS").value;
+    const mode=slot.querySelector("#pMode").value;
+    slot.querySelector("#pHv").textContent=h+"°";
+    slot.querySelector("#pSv").textContent=s+"%";
+    let cols;
+    if(mode==="mono") cols=[hsl(h,s*0.3,10),hsl(h,s*0.4,18),hsl(h,s*0.6,38),hsl(h,s,55),hsl(h,s*0.7,88)];
+    else if(mode==="analog") cols=[hsl(h,s*0.35,10),hsl(h-24,s*0.6,26),hsl(h,s,55),hsl(h+24,s*0.85,66),hsl(h+12,s*0.5,90)];
+    else cols=[hsl(h,s*0.35,10),hsl(h,s*0.5,24),hsl(h,s,55),hsl(h+180,s,60),hsl(h,s*0.4,90)];
+    const names=["ink","surface","primary","accent","paper"];
+    slot.querySelector("#pSw").innerHTML=cols.map((c,i)=>`<div style="background:${c}">${names[i]}</div>`).join("");
+    const mock=slot.querySelector("#pMock");
+    mock.style.background=cols[1]; mock.style.color=cols[4];
+    slot.querySelector("#pArt").style.background=`linear-gradient(135deg, ${cols[2]}, ${cols[3]})`;
+    slot.querySelector("#pTrack").style.background="rgba(255,255,255,.18)";
+    slot.querySelector("#pFill").style.background=cols[3];
+    const pl=slot.querySelector("#pPlay"); pl.style.background=cols[2]; pl.style.color=cols[4];
+  };
+  ["pH","pS"].forEach(id=>slot.querySelector("#"+id).addEventListener("input",upd));
+  slot.querySelector("#pMode").addEventListener("change",upd);
+  upd();
+}
+
+function labAutolayout(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Auto Layout Sandbox</h2>
+    <p style="font-size:14px;color:var(--muted)">These are Figma's exact auto-layout controls, live. The container below holds three children — steer them with the four dials and notice how <strong style="color:var(--text)">hug</strong> vs <strong style="color:var(--text)">fill</strong> changes everything.</p>
+    <div class="ctlrow">
+      <label class="ctl">direction<div class="seg" id="alDir" style="width:150px"><button data-v="row" class="on">→ row</button><button data-v="column">↓ column</button></div></label>
+      <label class="ctl">gap <span id="alGv">12px</span><input type="range" id="alG" min="0" max="48" value="12"></label>
+      <label class="ctl">padding <span id="alPv">16px</span><input type="range" id="alP" min="0" max="48" value="16"></label>
+      <label class="ctl">child sizing<div class="seg" id="alSz" style="width:150px"><button data-v="hug" class="on">hug</button><button data-v="fill">fill</button></div></label>
+    </div>
+    <div style="background:#f3f2f2;border-radius:12px;padding:20px">
+      <div id="alBox" style="display:flex;background:#fff;border:2px dashed #ec3013;border-radius:10px;transition:gap .2s,padding .2s"></div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);font-family:var(--mono);margin-top:12px" id="alCode"></p></div>`;
+  const st={dir:"row",gap:12,pad:16,sz:"hug"};
+  const upd=()=>{
+    const box=slot.querySelector("#alBox");
+    box.style.flexDirection=st.dir==="row"?"row":"column";
+    box.style.gap=st.gap+"px"; box.style.padding=st.pad+"px";
+    slot.querySelector("#alGv").textContent=st.gap+"px";
+    slot.querySelector("#alPv").textContent=st.pad+"px";
+    box.innerHTML=["Save changes","Cancel","Help"].map((t,i)=>
+      `<div style="background:${i===0?'#ec3013':'#e8e2df'};color:${i===0?'#fff':'#1c1a1a'};border-radius:8px;padding:10px 16px;font-size:13.5px;font-weight:600;text-align:center;${st.sz==='fill'?'flex:1':''}">${t}</div>`).join("");
+    slot.querySelector("#alCode").textContent=
+      `figma: direction ${st.dir} · gap ${st.gap} · padding ${st.pad} · ${st.sz} contents   |   css: flex-direction:${st.dir}; gap:${st.gap}px; padding:${st.pad}px;`;
+  };
+  slot.querySelector("#alDir").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;st.dir=b.dataset.v;slot.querySelectorAll("#alDir button").forEach(x=>x.classList.toggle("on",x===b));upd();});
+  slot.querySelector("#alSz").addEventListener("click",e=>{const b=e.target.closest("[data-v]");if(!b)return;st.sz=b.dataset.v;slot.querySelectorAll("#alSz button").forEach(x=>x.classList.toggle("on",x===b));upd();});
+  slot.querySelector("#alG").addEventListener("input",e=>{st.gap=+e.target.value;upd();});
+  slot.querySelector("#alP").addEventListener("input",e=>{st.pad=+e.target.value;upd();});
+  upd();
+}
+
+function labStates(slot){
+  const STATES=[
+    ["default","The resting look. Clearly pressable: filled, rounded, readable.","background:#ec3013;color:#fff2ef;"],
+    ["hover","Pointer feedback (desktop only — phones have no hover!). Slightly brighter or lifted.","background:#ff4a2e;color:#fff2ef;box-shadow:0 4px 14px rgba(236,48,19,.45);"],
+    ["focus","Keyboard position indicator. A visible ring — never remove it.","background:#ec3013;color:#fff2ef;outline:3px solid #ff9784;outline-offset:3px;"],
+    ["active","The press itself. Slightly darker or compressed — the click acknowledged.","background:#b12410;color:#fff2ef;transform:scale(.97);"],
+    ["disabled","Unavailable, and honest about it. Reduced contrast, no pointer events — but ideally explain WHY nearby.","background:#4a4443;color:#8a8482;cursor:not-allowed;"],
+    ["loading","Action in progress. The label yields to a spinner; the button locks to prevent double-submits.","background:#ec3013;color:#fff2ef;opacity:.85;"],
+    ["error","Something failed. Often the surrounding message matters more than the button styling.","background:#7c1405;color:#ffd9d2;"],
+    ["success","Confirmation. Brief green beat before returning to default.","background:#2e7d43;color:#eaffef;"]
+  ];
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Component States Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">Beginners design one button. Systems designers design eight of them. Click through the full anatomy — in Figma these would be <strong style="color:var(--text)">variants</strong> of one component.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px" id="stTabs">
+      ${STATES.map((s,i)=>`<button class="btn ghost sm ${i===0?'on':''}" data-si="${i}" style="font-family:var(--mono)">${s[0]}</button>`).join("")}
+    </div>
+    <div style="background:#f3f2f2;border-radius:12px;padding:40px;display:grid;place-items:center">
+      <button id="stBtn" style="border:none;border-radius:9px;padding:13px 28px;font-weight:600;font-size:15px;font-family:var(--body);transition:all .15s">Save changes</button>
+    </div>
+    <p id="stDesc" style="font-size:14px;margin-top:16px"></p></div>`;
+  const set=i=>{
+    const [name,desc,css]=STATES[i];
+    const b=slot.querySelector("#stBtn");
+    b.style.cssText="border:none;border-radius:9px;padding:13px 28px;font-weight:600;font-size:15px;font-family:var(--body);transition:all .15s;"+css;
+    b.textContent = name==="loading"?"◌ Saving…":name==="success"?"✓ Saved":name==="error"?"Retry save":"Save changes";
+    slot.querySelector("#stDesc").innerHTML=`<strong style="color:var(--peach)">${name}:</strong> ${desc}`;
+    slot.querySelectorAll("#stTabs button").forEach((x,xi)=>x.classList.toggle("on",xi===i));
+  };
+  slot.querySelector("#stTabs").addEventListener("click",e=>{const b=e.target.closest("[data-si]");if(b)set(+b.dataset.si);});
+  set(0);
+}
+
+function labBreakpoint(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Breakpoint Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">One page, one slider. Drag the viewport width and watch the layout restructure at each breakpoint — nav collapses, columns stack, exactly like a responsive site under a shrinking window.</p>
+    <div class="ctlrow"><label class="ctl">viewport width <span id="bpV">960px</span><input type="range" id="bpW" min="300" max="960" value="960" style="width:280px"></label>
+    <span class="tag hot" id="bpTag">desktop ≥ 860</span></div>
+    <div style="background:var(--ink);border:1px solid var(--line-soft);border-radius:12px;padding:18px;display:grid;place-items:center;overflow-x:auto">
+      <div id="bpPage" style="background:#f3f2f2;border-radius:10px;overflow:hidden;transition:width .1s;color:#1c1a1a;font-size:11px"></div>
+    </div></div>`;
+  const draw=w=>{
+    const page=slot.querySelector("#bpPage");
+    page.style.width=w+"px";
+    const bp = w>=860?"desktop":w>=560?"tablet":"mobile";
+    slot.querySelector("#bpV").textContent=w+"px";
+    const tag=slot.querySelector("#bpTag");
+    tag.textContent = bp==="desktop"?"desktop ≥ 860":bp==="tablet"?"tablet 560–859":"mobile < 560";
+    const navItems = bp==="mobile"
+      ? `<span style="font-size:15px">☰</span>`
+      : `<span>Products</span><span>Pricing</span><span>Docs</span><span>About</span>`;
+    const cols = bp==="desktop"?3:bp==="tablet"?2:1;
+    let cards="";
+    for(let i=1;i<=3;i++) cards+=`<div style="background:#fff;border-radius:8px;padding:10px"><div style="height:34px;background:#e4dedb;border-radius:6px;margin-bottom:7px"></div><b>Feature ${i}</b><div style="color:#777">Short supporting copy that wraps as needed.</div></div>`;
+    page.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:#1c1a1a;color:#fff2ef">
+        <b style="font-size:12px">BRAND</b><div style="display:flex;gap:12px;align-items:center">${navItems}</div>
+      </div>
+      <div style="padding:${bp==="mobile"?"14px":"22px"} 14px">
+        <div style="font-weight:800;font-size:${bp==="desktop"?"20px":bp==="tablet"?"17px":"15px"};font-family:var(--display)">Grow your practice</div>
+        <div style="color:#777;margin:4px 0 12px">The layout below reflows: ${cols} column${cols>1?"s":""} at this width.</div>
+        <div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:10px">${cards}</div>
+      </div>`;
+  };
+  slot.querySelector("#bpW").addEventListener("input",e=>draw(+e.target.value));
+  draw(960);
+}
+
+function labEasing(slot){
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Motion &amp; Easing Lab</h2>
+    <p style="font-size:14px;color:var(--muted)">Four dots, four easing curves, one race. Adjust duration, hit replay, and watch — <strong style="color:var(--text)">linear</strong> feels robotic while <strong style="color:var(--text)">ease-out</strong> feels alive. This is why motion specs always name a curve.</p>
+    <div class="ctlrow">
+      <label class="ctl">duration <span id="ezV">300ms</span><input type="range" id="ezD" min="100" max="1200" step="50" value="300"></label>
+      <button class="btn sm" id="ezGo">▶ Replay</button>
+    </div>
+    <div id="ezTrack"></div>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px">Rules of thumb: UI transitions live at 150–400ms · entrances use ease-out · exits use ease-in · linear is for progress bars and nothing else.</p></div>`;
+  const curves=[["linear","linear"],["ease-in","cubic-bezier(.5,0,1,1)"],["ease-out","cubic-bezier(0,0,.4,1)"],["ease-in-out","cubic-bezier(.6,0,.4,1)"]];
+  slot.querySelector("#ezTrack").innerHTML=curves.map(([n],i)=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--muted);width:86px">${n}</span>
+      <div style="flex:1;height:34px;background:var(--ink);border:1px solid var(--line-soft);border-radius:99px;position:relative">
+        <div class="ezdot" data-ei="${i}" style="position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:99px;background:${i===2?'var(--peach)':'var(--vermilion)'}"></div>
+      </div>
+    </div>`).join("");
+  const run=()=>{
+    const d=+slot.querySelector("#ezD").value;
+    slot.querySelector("#ezV").textContent=d+"ms";
+    slot.querySelectorAll(".ezdot").forEach(dot=>{
+      const i=+dot.dataset.ei;
+      dot.style.transition="none"; dot.style.left="4px";
+      void dot.offsetWidth;
+      dot.style.transition=`left ${d}ms ${curves[i][1]}`;
+      dot.style.left="calc(100% - 28px)";
+    });
+  };
+  slot.querySelector("#ezGo").addEventListener("click",run);
+  slot.querySelector("#ezD").addEventListener("input",()=>{slot.querySelector("#ezV").textContent=slot.querySelector("#ezD").value+"ms";});
+  setTimeout(run,300);
+}
+
+function labShortcuts(slot){
+  const CARDS=[
+    ["Duplicate selection",["⌘/Ctrl + D","⌘/Ctrl + J","Alt + P"],0],
+    ["Create a component",["⌘/Ctrl + Shift + B","⌘/Ctrl + Alt + K","F9"],1],
+    ["Add Auto Layout to selection",["Shift + A","⌘/Ctrl + L","Alt + A"],0],
+    ["Group selection",["⌘/Ctrl + G","Shift + G","⌘/Ctrl + B"],0],
+    ["Frame tool",["F","R","A"],0],
+    ["Rectangle tool",["Q","R","B"],1],
+    ["Text tool",["T","X","W"],0],
+    ["Toggle Dev Mode",["Shift + D","⌘/Ctrl + M","Alt + V"],0],
+    ["Zoom to fit everything",["Shift + 1","⌘/Ctrl + 0","Z"],0],
+    ["Copy properties / paste properties",["⌘/Ctrl + Alt + C / V","⌘/Ctrl + P / O","Shift + C / V"],0],
+    ["Show/hide the UI panels",["⌘/Ctrl + \\\\","Tab twice","F11"],0],
+    ["Detach an instance from its component",["⌘/Ctrl + Alt + B","⌘/Ctrl + Shift + X","Alt + D"],0]
+  ];
+  slot.innerHTML=`<div class="labpanel">
+    <h2 style="margin-top:0">Figma Shortcut Trainer</h2>
+    <p style="font-size:14px;color:var(--muted)">Working designers hit these dozens of times an hour — muscle memory is real speed. Ten flashcards per round; pick the right shortcut.</p>
+    <button class="btn" id="scStart">Start round</button>
+    <div id="scCard" style="margin-top:16px"></div>
+    <div id="scOut" style="margin-top:12px;font-family:var(--mono);font-size:13.5px"></div></div>`;
+  let deck=[], qi=0, score=0;
+  const box=slot.querySelector("#scCard");
+  function draw(){
+    if(qi>=deck.length){
+      box.innerHTML="";
+      slot.querySelector("#scOut").innerHTML=`round complete — <b style="color:var(--peach)">${score}/${deck.length}</b><br><span style="color:var(--muted)">${score>=8?"That's working-designer speed. ":"Run it again — repetition IS the trainer. "}Full list lives in Figma under the ? menu → Keyboard shortcuts.</span>`;
+      return;
+    }
+    const [act,opts,ans]=deck[qi];
+    box.innerHTML=`<div class="card"><div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px">card ${qi+1}/${deck.length}</div>
+      <div style="font-family:var(--display);font-size:19px;margin-bottom:14px">${act}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">${opts.map((o,i)=>`<button class="btn ghost sm" data-sci="${i}" style="font-family:var(--mono)">${o}</button>`).join("")}</div>
+      <div id="scFb" style="margin-top:10px;font-size:13px;font-family:var(--mono)"></div></div>`;
+    box.querySelectorAll("[data-sci]").forEach(b=>b.addEventListener("click",()=>{
+      const i=+b.dataset.sci, fb=box.querySelector("#scFb");
+      if(i===ans){ score++; fb.textContent="✓ correct"; fb.style.color="var(--ok)"; }
+      else { fb.textContent="✗ it's "+opts[ans]; fb.style.color="var(--vermilion)"; }
+      box.querySelectorAll("[data-sci]").forEach(x=>x.disabled=true);
+      setTimeout(()=>{qi++;draw();},700);
+    }));
+  }
+  slot.querySelector("#scStart").addEventListener("click",()=>{
+    deck=[...CARDS].sort(()=>Math.random()-.5).slice(0,10);
+    qi=0; score=0; slot.querySelector("#scOut").textContent="";
+    draw();
+  });
+}
+
+/* =====================================================
+   CHALLENGES
+===================================================== */
+function renderChallenges(){
+  const v=el(`
+    <div class="eyebrow">Critique training</div>
+    <h1>Challenges</h1>
+    <p class="lede">Real designers develop an eye by finding what's broken. Each challenge shows a flawed interface; exactly three of the six critiques are legitimate. Choose your three and submit — 40 XP per solve. These double as training for the "app critique" round in design interviews (Module 13).</p>
+    <div id="chlist" style="margin-top:24px"></div>
+  `);
+  const list=v.querySelector("#chlist");
+  CHALLENGES.forEach(ch=>{
+    const solved=S.challenges.includes(ch.id);
+    const d=document.createElement("div");
+    d.className="card"; d.style.marginBottom="22px";
+    d.innerHTML=`<h3 style="margin-top:0;color:var(--text)">${ch.title} ${solved?'<span style="color:var(--ok);font-size:13px;font-family:var(--mono)">✓ solved</span>':''}</h3>
+      <p style="font-size:14px;color:var(--muted)">${ch.intro}</p>
+      <div class="chmock">${ch.mock}</div>
+      <div class="chopts">${ch.opts.map((o,i)=>`
+        <label class="chopt"><input type="checkbox" data-ci="${i}"><span>${o.t}</span></label>
+        <div class="chwhy" data-cw="${i}" style="display:none;font-size:12.5px;color:var(--muted);margin:-4px 0 10px 34px"></div>`).join("")}</div>
+      <button class="btn sm" data-chsub="${ch.id}">Submit critique</button>
+      <span class="chres" style="margin-left:12px;font-family:var(--mono);font-size:13px"></span>`;
+    d.querySelector("[data-chsub]").addEventListener("click",()=>{
+      const checks=[...d.querySelectorAll("input[data-ci]")];
+      const chosen=checks.filter(c=>c.checked).map(c=>+c.dataset.ci);
+      if(chosen.length!==3){ toast("Pick exactly 3 critiques"); return; }
+      let right=0;
+      ch.opts.forEach((o,i)=>{
+        const lab=checks[i].closest(".chopt");
+        lab.classList.remove("correct","wrong");
+        const why=d.querySelector(`[data-cw="${i}"]`);
+        if(chosen.includes(i)){
+          lab.classList.add(o.ok?"correct":"wrong");
+          why.style.display="block"; why.textContent="→ "+o.why;
+          if(o.ok) right++;
+        } else if(o.ok){
+          lab.classList.add("correct");
+          why.style.display="block"; why.textContent="→ (missed) "+o.why;
+        }
+      });
+      const res=d.querySelector(".chres");
+      if(right===3){
+        res.textContent="3/3 — sharp eye."; res.style.color="var(--ok)";
+        if(!S.challenges.includes(ch.id)){
+          S.challenges.push(ch.id);
+          addXP(40,"challenge solved");
+          award("Critic");
+          renderNav();
+        }
+      } else {
+        res.textContent=right+"/3 correct — study the notes and try again."; res.style.color="var(--vermilion)";
+      }
+    });
+    list.appendChild(d);
+  });
+  mount(v);
+}
+
+/* =====================================================
+   PLAYGROUND
+===================================================== */
+const PG_TYPES = {
+  heading:{label:"Heading", make:()=>({type:"heading", text:"Your headline here", size:"m", color:"ink", align:"left"})},
+  text:{label:"Paragraph", make:()=>({type:"text", text:"Supporting copy goes here. Keep it short — people scan.", size:"m", color:"muted", align:"left"})},
+  button:{label:"Button", make:()=>({type:"button", text:"Primary action", size:"m", color:"accent", align:"left"})},
+  input:{label:"Input field", make:()=>({type:"input", text:"Email address", size:"m", color:"ink", align:"left"})},
+  image:{label:"Image placeholder", make:()=>({type:"image", text:"image", size:"m", color:"ink", align:"left"})},
+  divider:{label:"Divider", make:()=>({type:"divider", text:"", size:"m", color:"ink", align:"left"})}
+};
+let pgState={device:"mobile", els:[], sel:-1};
+
+function renderPlayground(){
+  const v=el(`
+    <div class="eyebrow">Build</div>
+    <h1>Playground</h1>
+    <p class="lede">A wireframing bench. Add elements, click one to select it, tune its hierarchy in the inspector, and flip between mobile and desktop. There's no wrong answer here — this is where lessons become instinct.</p>
+    <div class="ctlrow" style="margin-top:18px">
+      <div class="seg" style="width:220px">
+        <button id="pgMob" class="${pgState.device==='mobile'?'on':''}">mobile · 340px</button>
+        <button id="pgDesk" class="${pgState.device==='desktop'?'on':''}">desktop</button>
+      </div>
+      <button class="btn ghost sm" id="pgClear">Clear canvas</button>
+    </div>
+    <div class="pg" style="margin-top:16px">
+      <div class="palette card" data-xr="element palette · limited choices (Hick's Law)">
+        <div class="navlabel" style="padding:0 0 8px">Add element</div>
+        ${Object.entries(PG_TYPES).map(([k,t])=>`<button data-add="${k}">+ ${t.label}</button>`).join("")}
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px;font-family:var(--mono)">tip: one heading, one primary button — then squint.</div>
+      </div>
+      <div><div class="frame ${pgState.device}" id="pgFrame"></div></div>
+      <div class="props card" id="pgProps"></div>
+    </div>
+  `);
+  v.querySelector("#pgMob").addEventListener("click",()=>{pgState.device="mobile";renderPlayground();});
+  v.querySelector("#pgDesk").addEventListener("click",()=>{pgState.device="desktop";renderPlayground();});
+  v.querySelector("#pgClear").addEventListener("click",()=>{pgState.els=[];pgState.sel=-1;renderPlayground();});
+  v.querySelector(".palette").addEventListener("click",e=>{
+    const b=e.target.closest("[data-add]");
+    if(!b) return;
+    pgState.els.push(PG_TYPES[b.dataset.add].make());
+    pgState.sel=pgState.els.length-1;
+    S.pgAdds=(S.pgAdds||0)+1; saveState();
+    if(S.pgAdds===5) award("Builder");
+    renderPlayground();
+  });
+  drawCanvas(v);
+  drawProps(v);
+  mount(v);
+}
+const PG_COLORS={ink:"#1c1a1a", muted:"#6d6663", accent:"#ec3013"};
+const PG_HSIZE={s:"20px", m:"28px", l:"38px"};
+const PG_TSIZE={s:"12.5px", m:"14.5px", l:"17px"};
+function drawCanvas(v){
+  const f=v.querySelector("#pgFrame");
+  if(!pgState.els.length){
+    f.innerHTML=`<div class="emptycanvas">empty canvas —<br>add elements from the left<br><br>an empty state should always say what to do next. like this one.</div>`;
+    return;
+  }
+  f.innerHTML="";
+  pgState.els.forEach((e2,i)=>{
+    const d=document.createElement("div");
+    d.className="pgel"+(pgState.sel===i?" sel":"");
+    d.style.textAlign=e2.align;
+    if(e2.type==="heading") d.innerHTML=`<h4 style="font-size:${PG_HSIZE[e2.size]};color:${PG_COLORS[e2.color]}">${esc(e2.text)}</h4>`;
+    if(e2.type==="text") d.innerHTML=`<p style="font-size:${PG_TSIZE[e2.size]};color:${PG_COLORS[e2.color]}">${esc(e2.text)}</p>`;
+    if(e2.type==="button") d.innerHTML=`<button class="pgbtn" style="background:${PG_COLORS[e2.color]};font-size:${PG_TSIZE[e2.size]};${e2.color==='muted'?'':''}" tabindex="-1">${esc(e2.text)}</button>`;
+    if(e2.type==="input") d.innerHTML=`<input placeholder="${esc(e2.text)}" tabindex="-1" style="font-size:${PG_TSIZE[e2.size]}">`;
+    if(e2.type==="image") d.innerHTML=`<div class="imgph" style="height:${e2.size==='s'?70:e2.size==='m'?120:190}px">image · ${e2.size.toUpperCase()}</div>`;
+    if(e2.type==="divider") d.innerHTML=`<hr class="divl">`;
+    d.addEventListener("click",()=>{pgState.sel=i;renderPlayground();});
+    f.appendChild(d);
+  });
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function drawProps(v){
+  const p=v.querySelector("#pgProps");
+  const i=pgState.sel;
+  if(i<0 || !pgState.els[i]){
+    p.innerHTML=`<div class="navlabel" style="padding:0 0 8px">Inspector</div><p style="font-size:13px;color:var(--muted);margin:0">Select an element on the canvas to edit its text, size, color role, and alignment — the same four dials behind most visual hierarchy.</p>`;
+    return;
+  }
+  const e2=pgState.els[i];
+  p.innerHTML=`<div class="navlabel" style="padding:0 0 8px">Inspector — ${PG_TYPES[e2.type].label}</div>
+    ${e2.type!=="divider"&&e2.type!=="image"?`<div class="ctl">text<input type="text" id="ppText" value="${esc(e2.text)}"></div>`:""}
+    <div class="ctl">size<div class="seg" id="ppSize">${["s","m","l"].map(s=>`<button data-v="${s}" class="${e2.size===s?'on':''}">${s.toUpperCase()}</button>`).join("")}</div></div>
+    ${e2.type!=="divider"&&e2.type!=="image"?`<div class="ctl">color role<div class="seg" id="ppColor">${["ink","muted","accent"].map(c=>`<button data-v="${c}" class="${e2.color===c?'on':''}">${c}</button>`).join("")}</div></div>
+    <div class="ctl">align<div class="seg" id="ppAlign">${["left","center","right"].map(a=>`<button data-v="${a}" class="${e2.align===a?'on':''}">${a}</button>`).join("")}</div></div>`:""}
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn ghost sm" id="ppUp" ${i===0?'disabled':''}>↑</button>
+      <button class="btn ghost sm" id="ppDown" ${i===pgState.els.length-1?'disabled':''}>↓</button>
+      <button class="btn ghost sm" id="ppDel" style="margin-left:auto;color:var(--vermilion)">delete</button>
+    </div>`;
+  const rt=p.querySelector("#ppText");
+  if(rt) rt.addEventListener("input",()=>{ e2.text=rt.value; drawCanvas(document.getElementById("main").firstChild); });
+  [["ppSize","size"],["ppColor","color"],["ppAlign","align"]].forEach(([id,key])=>{
+    const seg=p.querySelector("#"+id);
+    if(seg) seg.addEventListener("click",ev=>{
+      const b=ev.target.closest("[data-v]"); if(!b) return;
+      e2[key]=b.dataset.v; renderPlayground();
+    });
+  });
+  p.querySelector("#ppUp").addEventListener("click",()=>{ [pgState.els[i-1],pgState.els[i]]=[pgState.els[i],pgState.els[i-1]]; pgState.sel=i-1; renderPlayground(); });
+  p.querySelector("#ppDown").addEventListener("click",()=>{ [pgState.els[i+1],pgState.els[i]]=[pgState.els[i],pgState.els[i+1]]; pgState.sel=i+1; renderPlayground(); });
+  p.querySelector("#ppDel").addEventListener("click",()=>{ pgState.els.splice(i,1); pgState.sel=-1; renderPlayground(); });
+}
+
+/* =====================================================
+   TOOL ATLAS
+===================================================== */
+const TOOLS=[
+["Design & Prototyping",[
+  ["Figma","The industry default: browser-based, multiplayer UI design, prototyping, and Dev Mode handoff. Free tier is genuinely enough to learn and build a portfolio.","Learn this first — it's the job requirement."],
+  ["FigJam","Figma's whiteboard: flows, workshops, affinity maps, brainstorms. Lives beside your design files.","Your second Figma surface; used in nearly every research synthesis."],
+  ["Sketch","The Mac-only pioneer that invented much of the modern workflow. Still around, mostly at Apple-centric shops.","Recognize it; don't prioritize it."],
+  ["Penpot","Open-source, self-hostable Figma alternative with growing adoption.","Know it exists for privacy-first teams."],
+  ["Framer","Design tool that publishes real, production websites — popular for marketing sites and advanced interactive prototypes.","When a prototype needs to become a real site."],
+  ["ProtoPie","High-fidelity prototyping with logic, variables, and device sensors — beyond what Figma can fake.","For testing complex interactions before code."],
+  ["Adobe XD","Adobe's former Figma competitor — in maintenance mode since 2023, no active development.","Legacy only. Don't invest learning time."]
+]],
+["Whiteboard & Workshop",[
+  ["Miro","The enterprise infinite whiteboard: workshops, journey maps, retros. FigJam's main rival.","Common in larger orgs and consultancies."],
+  ["Whimsical","Fast, opinionated flowcharts, wireframes, and docs.","Lovely for quick user flows."]
+]],
+["Research & Testing",[
+  ["UserTesting","Recruit real people and watch recorded sessions of them attempting your tasks.","The heavyweight for moderated & unmoderated studies."],
+  ["Maze","Rapid unmoderated testing wired straight to your Figma prototypes: task success, heatmaps, first clicks.","The quickest loop from prototype to data."],
+  ["Optimal Workshop","The classic suite for card sorting, tree testing, and first-click tests.","When the question is information architecture."],
+  ["Lookback","Live moderated remote interviews with recording and timestamped notes.","For qualitative depth."],
+  ["Hotjar","Heatmaps, scroll maps, and session recordings on live products.","Behavioral evidence at scale, cheaply."],
+  ["Dovetail","A research repository: store, tag, and search findings so insights outlive the project.","How mature teams stop re-learning the same lessons."]
+]],
+["Handoff & Engineering Bridge",[
+  ["Figma Dev Mode","Inspect any layer for sizes, tokens, and CSS/iOS/Android snippets.","The current handoff standard."],
+  ["Storybook","Where engineers build, document, and test the coded component library.","Learn to read it — it's your system's other half."],
+  ["Zeplin","The former handoff king (specs and redlines from design files). Still in some older stacks.","Recognize the name in job posts."]
+]],
+["Assets & Utilities",[
+  ["Google Fonts","Free, production-ready typefaces (this platform's own three come from here).","Default source for web type."],
+  ["Lucide / Phosphor / Material Symbols","Open-source icon sets with consistent grids and weights.","Never draw a hamburger icon by hand."],
+  ["Unsplash / Pexels","Free high-quality photography for mockups.","Placeholder imagery that doesn't look placeholder."],
+  ["Coolors / Realtime Colors","Palette generators and in-context color previews.","Fast exploration before committing tokens."],
+  ["WebAIM Contrast Checker / Stark","Contrast math and accessibility linting (Stark plugs into Figma).","The pro versions of this studio's Contrast Lab."]
+]],
+["Learning & Reference",[
+  ["Nielsen Norman Group (NN/g)","Decades of research-backed articles on every UX topic — the field's library of record.","Read one article a day; compound interest for your brain."],
+  ["Laws of UX","Beautiful one-page explainers of the psychology in Module 05.","Bookmark it."],
+  ["Refactoring UI","The book/site that teaches visual polish to non-visual thinkers.","The fastest 'make it look professional' upgrade."],
+  ["Material Design / Apple HIG","The two platform bibles — free masterclasses in systematic design thinking.","Required reading for mobile work (Module 09)."],
+  ["The A11y Project / WebAIM","Practical accessibility checklists and patterns.","Companions to Module 12."]
+]]
+];
+function renderTools(){
+  const v=el(`
+    <div class="eyebrow">Reference</div>
+    <h1>Tool Atlas</h1>
+    <p class="lede">Every tool you'll hear named in a design job — what it is, and honestly, whether it deserves your time. Pair this with Module 07 for the deep Figma skills.</p>
+    <input class="gsearch" id="tq" placeholder="Filter tools… try 'testing' or 'handoff'" style="margin-top:18px">
+    <div id="tlist"></div>
+  `);
+  const draw=q=>{
+    const ql=q.toLowerCase();
+    v.querySelector("#tlist").innerHTML=TOOLS.map(([cat,items])=>{
+      const rows=items.filter(([n,d,w])=>(n+" "+d+" "+w+" "+cat).toLowerCase().includes(ql));
+      if(!rows.length) return "";
+      return `<h2>${cat}</h2><div class="grid2">`+rows.map(([n,d,w])=>
+        `<div class="card"><h3 style="margin-top:0;color:var(--text)">${n}</h3><p style="font-size:13.5px;color:var(--muted);margin-bottom:8px">${d}</p><p style="font-size:12.5px;margin:0;color:var(--peach)"><span style="font-family:var(--mono);font-size:10px;letter-spacing:.1em">WHY IT MATTERS → </span>${w}</p></div>`).join("")+`</div>`;
+    }).join("") || `<div class="gterm"><p>No tools match "${esc(q)}".</p></div>`;
+  };
+  v.querySelector("#tq").addEventListener("input",e=>draw(e.target.value));
+  draw("");
+  mount(v);
+}
+
+function renderGlossary(){
+  const v=el(`
+    <div class="eyebrow">Reference</div>
+    <h1>Glossary</h1>
+    <p class="lede">${GLOSSARY.length} terms you'll hear in every design conversation. Search-as-you-type — a small example of instant feedback in action.</p>
+    <input class="gsearch" id="gq" placeholder="Filter terms… try 'law' or 'contrast'" style="margin-top:18px">
+    <div id="glist"></div>
+  `);
+  const draw=q=>{
+    const list=v.querySelector("#glist");
+    const rows=GLOSSARY.filter(([t,d])=>(t+" "+d).toLowerCase().includes(q.toLowerCase()));
+    list.innerHTML = rows.length
+      ? rows.map(([t,d])=>`<div class="gterm"><b>${t}</b><p>${d}</p></div>`).join("")
+      : `<div class="gterm"><p>No terms match "${esc(q)}". Try a shorter word — and notice this empty state tells you what to do next.</p></div>`;
+  };
+  v.querySelector("#gq").addEventListener("input",e=>draw(e.target.value));
+  draw("");
+  mount(v);
+}
+
+const ALL_BADGES=[
+  ["First Steps","Complete your first lesson"],
+  ["Quiz Whiz","Score 80%+ on any quiz"],
+  ["Lab Rat","Explore all six labs"],
+  ["Critic","Solve a critique challenge"],
+  ["Builder","Add five elements in the Playground"],
+  ["Scholar","Complete every lesson in every module"],
+  ["Toolsmith","Complete the full Figma & toolchain module"],
+  ["Advocate","Complete the accessibility deep-dive module"]
+];
+function renderProgress(){
+  const {cur,next}=levelInfo();
+  const v=el(`
+    <div class="eyebrow">Reference</div>
+    <h1>My Progress</h1>
+    <p class="lede">You are a <strong style="color:var(--peach)">${cur.name}</strong> with ${S.xp} XP${next?` — ${next.at-S.xp} XP to ${next.name}`:" — top of the ladder."}.</p>
+    <h2>Modules</h2>
+    <div id="modbars"></div>
+    <h2>Badges</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap" id="badgerow"></div>
+    <h2>Levels</h2>
+    <div class="card" style="font-family:var(--mono);font-size:13px;line-height:2">
+      ${LEVELS.map(l=>`<div style="${S.xp>=l.at?'color:var(--peach)':'color:var(--muted)'}">${S.xp>=l.at?'●':'○'} ${l.name} — ${l.at} XP</div>`).join("")}
+    </div>
+    <hr>
+    <button class="btn ghost sm" id="resetall">Reset all progress</button>
+  `);
+  const bars=v.querySelector("#modbars");
+  MODULES.forEach(m=>{
+    const dl=m.lessons.filter(l=>S.lessons.includes(l.id)).length;
+    const quizPct = S.quizzes[m.id]!==undefined ? 1 : 0;
+    const pct=Math.round(((dl/m.lessons.length)*0.7+quizPct*0.3)*100);
+    const d=document.createElement("div");
+    d.style.margin="0 0 14px";
+    d.innerHTML=`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>${m.num} · ${m.title}</span><span style="font-family:var(--mono);color:var(--muted)">${pct}%</span></div><div class="progressline"><i style="width:${pct}%"></i></div>`;
+    bars.appendChild(d);
+  });
+  const br=v.querySelector("#badgerow");
+  ALL_BADGES.forEach(([b,desc])=>{
+    const won=S.badges.includes(b);
+    const s=document.createElement("span");
+    s.className="badgechip"+(won?" won":"");
+    s.title=desc;
+    s.textContent=(won?"★ ":"☆ ")+b;
+    br.appendChild(s);
+  });
+  v.querySelector("#resetall").addEventListener("click",()=>{
+    if(confirm("Reset all XP, lessons, quizzes, and badges?")){
+      S={xp:0,lessons:[],quizzes:{},labs:[],challenges:[],badges:[],pgAdds:0};
+      saveState(); go("home");
+    }
+  });
+  mount(v);
+}
+
+/* =====================================================
+   X-RAY MODE
+===================================================== */
+document.getElementById("xraytoggle").addEventListener("click",function(){
+  const on=document.body.classList.toggle("xray");
+  this.classList.toggle("on",on);
+  this.setAttribute("aria-pressed",on);
+  if(on && !S.badges.includes("X-Ray Vision")){
+    // easter egg, not in main badge list
+    toast("X-Ray on — the interface is now the lesson");
+  }
+});
+
+/* boot */
+renderXP();
+go("home");
+</script>
+</body>
+</html>
